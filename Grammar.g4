@@ -5,7 +5,7 @@ program	: stat+;
 stat	: type ID SEMI 
 		| type ID ASS expr SEMI
 		| ID ASS expr SEMI 
-		| ENUM ID ASS LBRACE EID (COMMA EID)* RBRACE
+		| ENUM ID ASS LBRACE EID (COMMA EID)* RBRACE SEMI
 		| IF LPAR expr RPAR stat* (ELSE stat*)?
 		| WHILE LPAR expr RPAR stat*
 		| LBRACE stat* RBRACE
