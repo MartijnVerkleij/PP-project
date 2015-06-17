@@ -10,6 +10,7 @@ stat	: type ID SEMI
 		| WHILE LPAR expr RPAR stat*
 		| block
 		| type ID LPAR (type ID (COMMA type ID)*)? RPAR block
+		| expr SEMI
 		;
 
 block 	: LBRACE stat* RBRACE
@@ -19,7 +20,8 @@ type	: INT
 		| BOOL
 		;
 		
-expr	: expr plusOp expr
+expr	: ID LPAR (expr (COMMA expr)*)? RPAR
+		| expr plusOp expr
 		| expr multOp expr
 		| expr expOp expr
 		| expr boolOp expr
