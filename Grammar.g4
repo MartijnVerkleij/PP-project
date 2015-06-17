@@ -36,6 +36,18 @@ cmpOp	: EQ | GT | GE | LT | LE | NE;
 prfOp	: MINUS | NOT;
 
 
+INT: 	I N T;
+BOOL: 	B O O L;
+ENUM: 	E N U M;
+IF: 	I F;
+ELSE: 	E L S E;
+WHILE: 	W H I L E;
+
+TRUE:	T R U E;
+FALSE:	F A L S E;
+
+
+
 
 ASS: 	'=';
 
