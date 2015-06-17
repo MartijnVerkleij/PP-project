@@ -9,7 +9,7 @@ stat	: type ID SEMI
 		| IF LPAR expr RPAR stat* (ELSE stat*)?
 		| WHILE LPAR expr RPAR stat*
 		| block
-		| type ID LPAR (expr (COMMA expr)*)? RPAR block
+		| type ID LPAR (type ID (COMMA type ID)*)? RPAR block
 		;
 
 block 	: LBRACE stat* RBRACE
