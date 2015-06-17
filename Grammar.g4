@@ -2,8 +2,38 @@ grammar Grammar;
 
 program	: stat+;
 
-stat	:  IF LBRACE expr RBRACE stat;
+stat	: type ID SEMI 
+		| ID ASS expr SEMI 
+		| ENUM ID ASS LBRACE EID (COMMA EID)* RBRACE
+		| IF LPAR expr RPAR stat* (ELSE stat*)?
+		| WHILE LPAR expr RPAR stat*
+		| LBRACE stat* RBRACE
+		;
+
+type	: INT
+		| BOOL
+		;
 		
+expr	: expr plusOp expr
+		| expr multOp expr
+		| expr expOp expr
+		| expr boolOp expr
+		| expr cmpOp expr
+		| prfOp expr
+		| LPAR expr RPAR 
+		| ID
+		| NUM
+		| EID
+		| TRUE
+		| FALSE
+		;
+		
+plusOp	: PLUS | MINUS;
+multOp	: STAR | SLASH;
+expOp	: CARET;
+boolOp	: AND | OR;
+cmpOp	: EQ | GT | GE | LT | LE | NE;
+prfOp	: MINUS | NOT;
 
 
 
@@ -15,8 +45,10 @@ GE: 	'>=';
 LT:     '<';
 LE:     '<=';
 NE:     '!=';
+
 AND:	'&&';
 OR:		'||';
+NOT:	'!';
 
 LBRACE: '{';
 RBRACE: '}';
@@ -36,6 +68,7 @@ PLUS:   '+';
 MINUS:  '-';
 SLASH:  '/';
 STAR:   '*';
+CARET:	'^';
 UND:	'_';
 
 COMMENT: '/*'.*? '*/' -> skip;
