@@ -8,7 +8,11 @@ stat	: type ID SEMI
 		| ENUM ID ASS LBRACE EID (COMMA EID)* RBRACE SEMI
 		| IF LPAR expr RPAR stat* (ELSE stat*)?
 		| WHILE LPAR expr RPAR stat*
-		| LBRACE stat* RBRACE
+		| block
+		| type ID LPAR (expr (COMMA expr)*)? RPAR block
+		;
+
+block 	: LBRACE stat* RBRACE
 		;
 
 type	: INT
