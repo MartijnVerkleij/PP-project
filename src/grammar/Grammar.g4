@@ -1,5 +1,7 @@
 grammar Grammar;
 
+@header{package grammar;}
+
 program	: stat+;
 
 stat	: type ID SEMI 											#declStat
