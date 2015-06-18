@@ -11,6 +11,7 @@ stat	: type ID SEMI
 		| block
 		| type ID LPAR (type ID (COMMA type ID)*)? RPAR block
 		| expr SEMI
+		| RUN ID LPAR (expr (COMMA expr)*)? RPAR SEMI			#funcDecl
 		;
 
 block 	: LBRACE stat* RBRACE
@@ -20,7 +21,8 @@ type	: INT
 		| BOOL
 		;
 		
-expr	: ID LPAR (expr (COMMA expr)*)? RPAR
+expr	: ID LPAR (expr (COMMA expr)*)? RPAR					#funcCall
+		| JOIN ID
 		| expr plusOp expr
 		| expr multOp expr
 		| expr expOp expr
@@ -49,6 +51,8 @@ ENUM: 	E N U M;
 IF: 	I F;
 ELSE: 	E L S E;
 WHILE: 	W H I L E;
+RUN:	R U N;
+JOIN:	J O I N;
 
 TRUE:	T R U E;
 FALSE:	F A L S E;
