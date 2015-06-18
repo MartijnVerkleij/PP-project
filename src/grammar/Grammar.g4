@@ -17,24 +17,24 @@ stat	: type ID SEMI
 block 	: LBRACE stat* RBRACE
 		;
 
-type	: INT
-		| BOOL
+type	: INT													#intType
+		| BOOL													#boolType
 		;
 		
 expr	: ID LPAR (expr (COMMA expr)*)? RPAR					#funcCall
-		| JOIN ID
-		| expr plusOp expr
-		| expr multOp expr
-		| expr expOp expr
-		| expr boolOp expr
-		| expr cmpOp expr
-		| prfOp expr
-		| LPAR expr RPAR 
-		| ID
-		| NUM
-		| EID
-		| TRUE
-		| FALSE
+		| JOIN ID												#join
+		| expr plusOp expr										#plusExpr
+		| expr multOp expr										#multExpr
+		| expr expOp expr										#expExpr
+		| expr boolOp expr										#boolExpr
+		| expr cmpOp expr										#cmpExpr
+		| prfOp expr											#prfExpr
+		| LPAR expr RPAR 										#parExpr
+		| ID													#idExpr
+		| NUM													#numExpr
+		| EID													#eidExpr
+		| TRUE													#trueExpr
+		| FALSE													#falseExpr
 		;
 		
 plusOp	: PLUS | MINUS;
