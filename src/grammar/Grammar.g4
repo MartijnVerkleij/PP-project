@@ -2,16 +2,16 @@ grammar Grammar;
 
 program	: stat+;
 
-stat	: type ID SEMI 
-		| type ID ASS expr SEMI
-		| ID ASS expr SEMI 
-		| ENUM ID ASS LBRACE EID (COMMA EID)* RBRACE SEMI
-		| IF LPAR expr RPAR stat* (ELSE stat*)?
-		| WHILE LPAR expr RPAR stat*
-		| block
-		| type ID LPAR (type ID (COMMA type ID)*)? RPAR block
-		| expr SEMI
-		| RUN ID LPAR (expr (COMMA expr)*)? RPAR SEMI			#funcDecl
+stat	: type ID SEMI 											#declStat
+		| type ID ASS expr SEMI									#declAssStat
+		| ID ASS expr SEMI 										#assStat
+		| ENUM ID ASS LBRACE EID (COMMA EID)* RBRACE SEMI		#enumStat
+		| IF LPAR expr RPAR stat* (ELSE stat*)?					#ifStat
+		| WHILE LPAR expr RPAR stat*							#whileStat
+		| block													#blockStat
+		| type ID LPAR (type ID (COMMA type ID)*)? RPAR block	#funcDecl
+		| expr SEMI												#exprStat
+		| RUN ID LPAR (expr (COMMA expr)*)? RPAR SEMI			#runStat
 		;
 
 block 	: LBRACE stat* RBRACE
