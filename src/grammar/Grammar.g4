@@ -4,8 +4,8 @@ grammar Grammar;
 
 program	: stat+;
 
-stat	: type ID SEMI 											#declStat
-		| type ID ASS expr SEMI									#declAssStat
+stat	: GLOBAL? type ID SEMI 									#declStat
+		| GLOBAL? type ID ASS expr SEMI							#declAssStat
 		| ID ASS expr SEMI 										#assStat
 		| ENUM ID ASS LBRACE EID (COMMA EID)* RBRACE SEMI		#enumStat
 		| IF LPAR expr RPAR stat* (ELSE stat*)?					#ifStat
@@ -47,6 +47,7 @@ cmpOp	: EQ | GT | GE | LT | LE | NE;
 prfOp	: MINUS | NOT;
 
 
+GLOBAL: G L O B A L;
 INT: 	I N T;
 BOOL: 	B O O L;
 ENUM: 	E N U M;
