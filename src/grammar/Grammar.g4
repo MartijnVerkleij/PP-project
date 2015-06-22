@@ -21,6 +21,7 @@ block 	: LBRACE stat* RBRACE
 
 type	: INT													#intType
 		| BOOL													#boolType
+		| VOID													#voidType
 		;
 		
 expr	: ID LPAR (expr (COMMA expr)*)? RPAR					#funcCall
@@ -50,6 +51,7 @@ prfOp	: MINUS | NOT;
 GLOBAL: G L O B A L;
 INT: 	I N T;
 BOOL: 	B O O L;
+VOID:	V O I D;
 ENUM: 	E N U M;
 IF: 	I F;
 ELSE: 	E L S E;
@@ -97,7 +99,7 @@ STAR:   '*';
 CARET:	'^';
 UND:	'_';
 
-COMMENT: '/*'.*? '*/' -> skip;
+COMMENT: ('/*'.*? '*/')|('//' .*? '\n') -> skip;
 WS: [ \t\r\n]+ -> skip;
 
 ID: 	LCASEL (LETTER | UND | DIGIT)*;

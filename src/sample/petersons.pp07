@@ -1,0 +1,6 @@
+//Peterson's Algorithm Sample Program
+
+global bool flag0 = false;
+global bool flag1 = false;
+global int turn;
+
