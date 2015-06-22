@@ -1,6 +1,51 @@
-//Peterson's Algorithm Sample Program
+// Peterson's Algorithm Sample Program
+// Requires 3 cores for optimal
 
 global bool flag0 = false;
 global bool flag1 = false;
 global int turn;
 
+void p0() {
+	lock 0;
+	flag0 = true;
+	turn = 1;
+	unlock 0;
+
+	bool condition = false;
+
+	while (condition) {
+		lock 0;
+		condition = flag1 && turn == 1;
+		unlock 0;
+	}
+
+	// critical section
+
+	flag0 = false;
+}
+
+void p1() {
+	lock 0;
+	flag1 = true;
+	turn = 0;
+	unlock 0;
+
+	bool condition = false;
+
+	while (condition) {
+		lock 0;
+		condition = flag0 && turn == 0;
+		unlock 0;
+	}
+
+	// critical section
+
+	flag1 = false;
+}
+
+void main() {
+	while (i > 0) {
+		run i (p0());
+		run id (p1());
+	}
+}

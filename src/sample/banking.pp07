@@ -1,0 +1,33 @@
+// Concurrent Banking Application
+
+global int account;
+
+void init() {
+	account = 100;
+}
+
+int read() {
+	while (locked writeLock) {}
+	return account;
+}
+
+void write(int amount) {
+	lock writeLock;
+	account = account + amount;
+	unlock writeLock;
+}
+
+void main() {
+	init();
+	run 0 (read);
+	run 1 (write, -10);
+	run 2 (read);
+	run 3 (write, 25);
+	run 4 (read);
+	run 5 (write, 1000);
+	run 6 (read);
+	int a = join 0;
+	int b = join 2;
+	int c = join 4;
+	int d = join 6;
+}
