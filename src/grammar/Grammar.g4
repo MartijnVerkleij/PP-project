@@ -14,8 +14,8 @@ stat	: GLOBAL? type ID SEMI 									#declStat
 		| type ID LPAR (type ID (COMMA type ID)*)? RPAR block	#funcDecl
 		| expr SEMI												#exprStat
 		| RUN ID LPAR (expr (COMMA expr)*)? RPAR SEMI			#runStat
-		| LOCK ID SEMI
-		| UNLOCK ID SEMI
+		| LOCK ID SEMI											#lockStat
+		| UNLOCK ID SEMI										#unlockStat
 		;
 
 block 	: LBRACE stat* RBRACE
