@@ -11,8 +11,9 @@ program	: stat+;
 *	assStat		- Assignment
 *		Assign an expression to a variable
 *	enumStat	- Enum Declaration
-*
+*		Declare an (optionally global) enumeration, and assign values to it. Assignment must occur in this phase
 *	ifStat		- If
+*
 *	whileStat	- While
 *	blockStat	- Block
 *	funcStat	- Function Declaration
@@ -24,9 +25,9 @@ program	: stat+;
 */
 stat	: GLOBAL? type ID (ASS expr)? SEMI							#declStat
 		| ID ASS expr SEMI 											#assStat
-		| ENUM ID ASS LBRACE EID (COMMA EID)* RBRACE SEMI			#enumStat
-		| IF LPAR expr RPAR stat* (ELSE stat*)?						#ifStat
-		| WHILE LPAR expr RPAR stat*								#whileStat
+		| GLOBAL? ENUM ID ASS LBRACE EID (COMMA EID)* RBRACE SEMI	#enumStat
+		| IF LPAR expr RPAR stat (ELSE stat)?						#ifStat
+		| WHILE LPAR expr RPAR stat									#whileStat
 		| block														#blockStat
 		| type ID LPAR (type ID (COMMA type ID)*)? RPAR block		#funcStat
 		| expr SEMI													#exprStat
