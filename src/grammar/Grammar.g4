@@ -4,42 +4,43 @@ grammar Grammar;
 
 program	: stat+;
 
-stat	: GLOBAL? type ID SEMI 									#declStat
-		| GLOBAL? type ID ASS expr SEMI							#declAssStat
-		| ID ASS expr SEMI 										#assStat
-		| ENUM ID ASS LBRACE EID (COMMA EID)* RBRACE SEMI		#enumStat
-		| IF LPAR expr RPAR stat* (ELSE stat*)?					#ifStat
-		| WHILE LPAR expr RPAR stat*							#whileStat
-		| block													#blockStat
-		| type ID LPAR (type ID (COMMA type ID)*)? RPAR block	#funcDecl
-		| expr SEMI												#exprStat
-		| RUN ID LPAR (expr (COMMA expr)*)? RPAR SEMI			#runStat
-		| LOCK ID SEMI											#lockStat
-		| UNLOCK ID SEMI										#unlockStat
+stat	: GLOBAL? type ID SEMI 										#declStat
+		| GLOBAL? type ID ASS expr SEMI								#declAssStat
+		| ID ASS expr SEMI 											#assStat
+		| ENUM ID ASS LBRACE EID (COMMA EID)* RBRACE SEMI			#enumStat
+		| IF LPAR expr RPAR stat* (ELSE stat*)?						#ifStat
+		| WHILE LPAR expr RPAR stat*								#whileStat
+		| block														#blockStat
+		| type ID LPAR (type ID (COMMA type ID)*)? RPAR block		#funcDecl
+		| expr SEMI													#exprStat
+		| RUN ID LPAR (ID ((COMMA expr)*)?) RPAR SEMI				#runStat
+		| LOCK ID SEMI												#lockStat
+		| UNLOCK ID SEMI											#unlockStat
+		| RETURN expr SEMI											#returnStat
 		;
 
 block 	: LBRACE stat* RBRACE
 		;
 
-type	: INT													#intType
-		| BOOL													#boolType
-		| VOID													#voidType
+type	: INT														#intType
+		| BOOL														#boolType
+		| VOID														#voidType
 		;
 		
-expr	: ID LPAR (expr (COMMA expr)*)? RPAR					#funcCall
-		| JOIN ID												#join
-		| expr plusOp expr										#plusExpr
-		| expr multOp expr										#multExpr
-		| expr expOp expr										#expExpr
-		| expr boolOp expr										#boolExpr
-		| expr cmpOp expr										#cmpExpr
-		| prfOp expr											#prfExpr
-		| LPAR expr RPAR 										#parExpr
-		| ID													#idExpr
-		| NUM													#numExpr
-		| EID													#eidExpr
-		| TRUE													#trueExpr
-		| FALSE													#falseExpr
+expr	: ID LPAR (expr (COMMA expr)*)? RPAR						#funcCall
+		| JOIN ID													#join
+		| expr plusOp expr											#plusExpr
+		| expr multOp expr											#multExpr
+		| expr expOp expr											#expExpr
+		| expr boolOp expr											#boolExpr
+		| expr cmpOp expr											#cmpExpr
+		| prfOp expr												#prfExpr
+		| LPAR expr RPAR 											#parExpr
+		| ID														#idExpr
+		| NUM														#numExpr
+		| EID														#eidExpr
+		| TRUE														#trueExpr
+		| FALSE														#falseExpr
 		;
 		
 plusOp	: PLUS | MINUS;
@@ -62,6 +63,7 @@ RUN:	R U N;
 JOIN:	J O I N;
 LOCK:	L O C K;
 UNLOCK:	U N L O C K;
+RETURN: R E T U R N;
 
 TRUE:	T R U E;
 FALSE:	F A L S E;
@@ -103,7 +105,7 @@ STAR:   '*';
 CARET:	'^';
 UND:	'_';
 
-COMMENT: ('/*'.*? '*/')|('//' .*? '\n') -> skip;
+COMMENT: (('/*'.*? '*/')|('//' .*? '\n')) -> skip;
 WS: [ \t\r\n]+ -> skip;
 
 ID: 	LCASEL (LETTER | UND | DIGIT)*;
