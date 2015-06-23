@@ -1,5 +1,6 @@
 package grammar;
 
 public class Type {
-	public enum Types {INT, BOOL}
+	public enum Types {INT, BOOL, ENUM, VOID}
+	
 }

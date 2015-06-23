@@ -1,13 +1,15 @@
 package grammar;
 
+import grammar.Type.Types;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
 public class SymbolTable{
 
-	private Map<String, Object> global = new HashMap<String, Object>();
-	private Stack<Map<String, Object>> stack = new Stack<Map<String, Object>>();
+	private Map<String, Types> global = new HashMap<String, Types>();
+	private Stack<Map<String, Types>> stack = new Stack<Map<String, Types>>();
 	
 
 	/**
@@ -17,7 +19,7 @@ public class SymbolTable{
 //		if (!stack.isEmpty()) {
 //			stack.add(new HashMap<String, Object>(stack.peek()));
 //		} else {
-		stack.add(new HashMap<String, Object>());
+		stack.add(new HashMap<String, Types>());
 //		}
 	}
 
@@ -34,12 +36,13 @@ public class SymbolTable{
 	 * Tries to declare a given identifier in the global scope.
 	 *
 	 * @param id
+	 * @param type 
 	 * @return <code>true</code> if the identifier was added,
 	 * <code>false</code> if it was already declared in this scope.
 	 */
-	public boolean addGlobal(String id) {
+	public boolean addGlobal(String id, Types type) {
 		if (!global.containsKey(id)) {
-			global.put(id, null);
+			global.put(id, type);
 			return true;
 		} else {
 			return false;
@@ -50,13 +53,14 @@ public class SymbolTable{
 	 * Tries to declare a given identifier in the deepest scope level.
 	 *
 	 * @param id
+	 * @param type
 	 * @return <code>true</code> if the identifier was added,
 	 * <code>false</code> if it was already declared in this scope.
 	 */
-	public boolean add(String id) {
+	public boolean add(String id, Types type) {
 		boolean isGood = false;
 		if (!stack.isEmpty() && !stack.peek().containsKey(id)) {
-			stack.peek().put(id, null);
+			stack.peek().put(id, type);
 			isGood = true;
 		} /*else if (stack.isEmpty() && global.containsKey(id)) {
 			global.put(id, null);
@@ -72,14 +76,17 @@ public class SymbolTable{
 	 * @return <code>true</code> if there is any enclosing scope in which
 	 * the identifier is declared; <code>false</code> otherwise.
 	 */
-	public boolean contains(String id) {
-		boolean contained = false;
-		for (int i = 0; i < stack.size(); i++) {
+	public Types contains(String id) {
+		Types contained = null;
+		for (int i = stack.size() - 1; i >= 0; i--) {
 			if (stack.get(i).containsKey(id)) {
-				contained = true;
+				contained = stack.get(i).get(id);
+				break;
 			}
 		}
-		contained = contained || global.containsKey(id);
+		if (contained == null) {
+			contained = global.containsKey(id) ? global.get(id) : null;
+		}
 		return contained;
 	}
 }
