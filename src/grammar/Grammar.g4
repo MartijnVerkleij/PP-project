@@ -29,6 +29,7 @@ type	: INT														#intType
 		
 expr	: ID LPAR (expr (COMMA expr)*)? RPAR						#funcCall
 		| JOIN ID													#join
+		| LOCKED ID													#lockedExpr
 		| expr plusOp expr											#plusExpr
 		| expr multOp expr											#multExpr
 		| expr expOp expr											#expExpr
