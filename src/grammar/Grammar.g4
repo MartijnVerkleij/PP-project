@@ -2,16 +2,33 @@ grammar Grammar;
 
 @header{package grammar;}
 
+// Program consists of one or more statements
 program	: stat+;
 
-stat	: GLOBAL? type ID SEMI 										#declStat
-		| GLOBAL? type ID ASS expr SEMI								#declAssStat
+/* Statments
+* 	declStat	- Declaration and Optional Assignment
+*		Declare a (optionally global) variable and optionally assign an expression to it
+*	assStat		- Assignment
+*		Assign an expression to a variable
+*	enumStat	- Enum Declaration
+*
+*	ifStat		- If
+*	whileStat	- While
+*	blockStat	- Block
+*	funcStat	- Function Declaration
+*	exprStat	- Expression
+*	runStat		- Run
+*	lockStat	- Lock
+*	unlockStat	- Unlock
+*	returnStat	- Return
+*/
+stat	: GLOBAL? type ID (ASS expr)? SEMI							#declStat
 		| ID ASS expr SEMI 											#assStat
 		| ENUM ID ASS LBRACE EID (COMMA EID)* RBRACE SEMI			#enumStat
 		| IF LPAR expr RPAR stat* (ELSE stat*)?						#ifStat
 		| WHILE LPAR expr RPAR stat*								#whileStat
 		| block														#blockStat
-		| type ID LPAR (type ID (COMMA type ID)*)? RPAR block		#funcDecl
+		| type ID LPAR (type ID (COMMA type ID)*)? RPAR block		#funcStat
 		| expr SEMI													#exprStat
 		| RUN ID LPAR (ID ((COMMA expr)*)?) RPAR SEMI				#runStat
 		| LOCK ID SEMI												#lockStat
