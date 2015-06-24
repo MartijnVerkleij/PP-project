@@ -2,7 +2,6 @@ package grammar;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import grammar.GrammarParser.AssStatContext;
 import grammar.GrammarParser.BlockStatContext;
@@ -11,10 +10,8 @@ import grammar.GrammarParser.EnumStatContext;
 import grammar.GrammarParser.FuncStatContext;
 import grammar.GrammarParser.IfStatContext;
 import grammar.GrammarParser.ProgramContext;
-import grammar.GrammarParser.StatContext;
 import grammar.GrammarParser.WhileStatContext;
 import grammar.Type.Types;
-import grammar.exception.ParseException;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
@@ -63,11 +60,11 @@ public class PP07Checker extends GrammarBaseListener {
 	
 	@Override
 	public void enterAssStat(AssStatContext ctx) {
-		if (symbolTable.contains(ctx.ID().getText()) == null) 
+		if (symbolTable.type(ctx.ID().getText()) == null)
 			addError("\"" + ctx.ID().getText() + "\" was not declared in any scope");
-		if (symbolTable.contains(ctx.ID().getText()) != nodeType.get(ctx.expr())) {
+		if (symbolTable.type(ctx.ID().getText()) != nodeType.get(ctx.expr())) {
 			addError("Assignment is of wrong type. Expected: " + 
-					symbolTable.contains(ctx.ID().getText()) + 
+					symbolTable.type(ctx.ID().getText()) +
 					" Actual: " + nodeType.get(ctx.expr()));
 		}
 	}
@@ -108,7 +105,7 @@ public class PP07Checker extends GrammarBaseListener {
 	@Override
 	public void exitProgram(ProgramContext ctx) {
 		if (!functions.contains("main")) {
-			addError("Program contains no main method");
+			addError("Program type no main method");
 		}
 	}
 
