@@ -11,7 +11,7 @@ import grammar.GrammarParser.FuncStatContext;
 import grammar.GrammarParser.IfStatContext;
 import grammar.GrammarParser.ProgramContext;
 import grammar.GrammarParser.WhileStatContext;
-import grammar.Type.Types;
+import grammar.TypeKind.Types;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
@@ -23,7 +23,7 @@ public class PP07Checker extends GrammarBaseListener {
 	private ParseTree checkedTree;
 	private List<String> errors = new ArrayList<String>();
 	private List<String> functions = new ArrayList<String>();
-	private ParseTreeProperty<Type.Types> nodeType = new ParseTreeProperty<Type.Types>();
+	private ParseTreeProperty<TypeKind.Types> nodeType = new ParseTreeProperty<TypeKind.Types>();
 	private SymbolTable symbolTable = new SymbolTable();
 	
 	public ParseTree check(ParseTree tree) {

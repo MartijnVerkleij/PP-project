@@ -1,7 +1,5 @@
 package grammar;
 
-import grammar.Type.Types;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -9,19 +7,19 @@ import java.util.Stack;
 public class SymbolTable {
 
 	// Global Scope
-	private Map<String, Types> globalTypes = new HashMap<String, Types>();
+	private Map<String, Type> globalTypes = new HashMap<String, Type>();
 	private Map<String, Integer> globalOffsets = new HashMap<>();
 	private int globalSize = 0;
 	// Local Scopes
 	private Stack<Map<String, Integer>> offsets = new Stack<>();
 	private Stack<Integer> size = new Stack<>();
-	private Stack<Map<String, Types>> types = new Stack<Map<String, Types>>();
+	private Stack<Map<String, Type>> types = new Stack<Map<String, Type>>();
 
 	/**
 	 * Adds a next deeper scope level.
 	 */
 	public void openScope() {
-		types.add(new HashMap<String, Types>());
+		types.add(new HashMap<String, Type>());
 		offsets.add(new HashMap<String, Integer>());
 		size.add(0);
 	}
@@ -45,7 +43,7 @@ public class SymbolTable {
 	 * @return <code>true</code> if the identifier was added,
 	 * <code>false</code> if it was already declared in this scope.
 	 */
-	public boolean addGlobal(String id, Types type) {
+	public boolean addGlobal(String id, Type type) {
 		if (!globalTypes.containsKey(id)) {
 			globalTypes.put(id, type);
 			globalOffsets.put(id, this.globalSize);
@@ -64,12 +62,13 @@ public class SymbolTable {
 	 * @return <code>true</code> if the identifier was added,
 	 * <code>false</code> if it was already declared in this scope.
 	 */
-	public boolean add(String id, Types type) {
+	public boolean add(String id, Type type) {
 		boolean isGood = false;
 		if (!types.isEmpty() && !types.peek().containsKey(id)) {
 			types.peek().put(id, type);
 			offsets.peek().put(id, this.size.peek());
-			size.peek() += type.size();
+			int tempSize = size.pop() + type.size();
+			size.push(tempSize);
 			isGood = true;
 		}
 		return isGood;
@@ -80,11 +79,11 @@ public class SymbolTable {
 	 * where it is declared.
 	 *
 	 * @param id name of the identifier
-	 * @return <code>Types</code> if there is any enclosing scope in which
+	 * @return <code>Type</code> if there is any enclosing scope in which
 	 * the identifier is declared; <code>null</code> otherwise.
 	 */
-	public Types type(String id) {
-		Types contained = null;
+	public Type type(String id) {
+		Type contained = null;
 		for (int i = types.size() - 1; i >= 0; i--) {
 			if (types.get(i).containsKey(id)) {
 				contained = types.get(i).get(id);
