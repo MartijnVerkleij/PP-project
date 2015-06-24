@@ -3,7 +3,6 @@ package grammar;
 import grammar.Functions.Function;
 import grammar.GrammarParser.*;
 import grammar.exception.ParseException;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -55,13 +54,6 @@ public class PP07Checker extends GrammarBaseListener {
 	}
 
 	@Override
-	public void enterProgram(ProgramContext ctx) {
-		if (ctx.stat().size() < 1) {
-			addError("Empty program");
-		}
-	}
-
-	@Override
 	public void exitDeclStat(DeclStatContext ctx) {
 		if (ctx.GLOBAL() == null) {
 			if (!symbolTable.add(ctx.ID().getText(), getType(ctx.type())))
@@ -96,16 +88,12 @@ public class PP07Checker extends GrammarBaseListener {
 
 	@Override
 	public void exitIfStat(IfStatContext ctx) {
-		if (getType(ctx.expr()) != Type.BOOL) {
-			addError("If statement requires a boolean expression");
-		}
+		checkType(ctx.expr(), Type.BOOL);
 	}
 
 	@Override
 	public void exitWhileStat(WhileStatContext ctx) {
-		if (getType(ctx.expr()) != Type.BOOL) {
-			addError("While statement requires a boolean expression");
-		}
+		checkType(ctx.expr(), Type.BOOL);
 	}
 
 	@Override
@@ -174,27 +162,27 @@ public class PP07Checker extends GrammarBaseListener {
 		FuncStatContext function = ((FuncStatContext) stat);
 		checkType(function.type(0), getType(ctx.expr()));
 	}
-	
+
 	@Override
 	public void exitBlock(BlockContext ctx) {
-			
+
 	}
 
 	@Override
 	public void exitIntType(IntTypeContext ctx) {
 		setType(ctx, Type.INT);
 	}
-	
+
 	@Override
 	public void exitBoolType(BoolTypeContext ctx) {
-		setType(ctx, Type.INT);
+		setType(ctx, Type.BOOL);
 	}
-	
+
 	@Override
 	public void exitVoidType(VoidTypeContext ctx) {
-		setType(ctx, Type.INT);
+		setType(ctx, Type.VOID);
 	}
-	
+
 	@Override
 	public void exitFuncCall(FuncCallContext ctx) {
 		String name = ctx.ID().getText();
@@ -222,6 +210,11 @@ public class PP07Checker extends GrammarBaseListener {
 	
 	@Override
 	public void exitProgram(ProgramContext ctx) {
+		if (ctx.stat().size() < 1) {
+			addError("Empty program");
+		} else {
+			setEntry(ctx, ctx.stat(0));
+		}
 		if (!functions.hasFunction("main")) {
 			addError("Program contains no main method");
 		}
