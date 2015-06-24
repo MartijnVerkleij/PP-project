@@ -207,7 +207,7 @@ public class PP07Checker extends GrammarBaseListener {
 					+ node.getText());
 		}
 		if (!actual.equals(expected)) {
-			addError(node.getText() + "Expected type '" + expected + "' but found '" + actual + "'");
+			addError(node.getText() + "\nExpected type '" + expected + "' but found '" + actual + "'");
 		}
 	}
 
