@@ -4,14 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import grammar.Functions.Function;
 import grammar.GrammarParser.AssStatContext;
 import grammar.GrammarParser.BlockStatContext;
 import grammar.GrammarParser.DeclStatContext;
 import grammar.GrammarParser.EnumStatContext;
+import grammar.GrammarParser.ExprStatContext;
 import grammar.GrammarParser.FuncStatContext;
 import grammar.GrammarParser.IfStatContext;
 import grammar.GrammarParser.ProgramContext;
+import grammar.GrammarParser.RunStatContext;
 import grammar.GrammarParser.StatContext;
+import grammar.GrammarParser.TypeContext;
 import grammar.GrammarParser.WhileStatContext;
 import grammar.Type.Types;
 import grammar.exception.ParseException;
@@ -25,11 +29,12 @@ public class PP07Checker extends GrammarBaseListener {
 	
 	private ParseTree checkedTree;
 	private List<String> errors = new ArrayList<String>();
-	private List<String> functions = new ArrayList<String>();
+	private Functions functions;
 	private ParseTreeProperty<Type.Types> nodeType = new ParseTreeProperty<Type.Types>();
 	private SymbolTable symbolTable = new SymbolTable();
 	
 	public ParseTree check(ParseTree tree) {
+		functions = new PP07FunctionWalker().walkFunctions(tree);
 		new ParseTreeWalker().walk(this, tree);
 		if (errors.isEmpty()) {
 			return tree;
@@ -101,15 +106,53 @@ public class PP07Checker extends GrammarBaseListener {
 	
 	@Override
 	public void enterFuncStat(FuncStatContext ctx) {
+		// already done in FunctionWalker
 		
+	}
+	
+	@Override
+	public void enterExprStat(ExprStatContext ctx) {
+		// left blank
+	}
+	
+	@Override
+	public void enterRunStat(RunStatContext ctx) {
+		String name = ctx.ID(0).getText();
+		Function function = functions.getFunction(name);
+		if (functions.hasFunction(name)) {
+			if (ctx.expr().size() == function
+					.getArgumentCount()) {
+				for (int i = 0; i < ctx.expr().size(); i++) {
+					if (!nodeType.get(ctx.expr(i)).equals(function.getArgument(i))) {
+						addError("Argument " + i + " of run call " + name 
+								+ " did not match expected type. "
+								+ "Expected: " + function.getArgument(i) 
+								+ " Actual: " + nodeType.get(ctx.expr(i)));
+					}
+				}
+			} else {
+				addError("Argument count of call " + name + " did not match. "
+						+ "Expected: " + function.getArgumentCount()
+						+ " Actual: " + ctx.expr().size());
+			}
+			
+		} else {
+			addError("Function " + ctx.ID(0).getText() + " not declared in program");
+		}
 	}
 	
 
 	@Override
 	public void exitProgram(ProgramContext ctx) {
-		if (!functions.contains("main")) {
+		if (!functions.hasFunction("main")) {
 			addError("Program contains no main method");
 		}
+	}
+	public Types getType(TypeContext ctx) {
+		if (ctx.getToken(GrammarParser.BOOL, 0) != null) return Types.BOOL;
+		if (ctx.getToken(GrammarParser.INT, 0) != null) return Types.INT;
+		if (ctx.getToken(GrammarParser.INT, 0) != null) return Types.VOID;
+		return null;
 	}
 
 	private void addError(String string) {

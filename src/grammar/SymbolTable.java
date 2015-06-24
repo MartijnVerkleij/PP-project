@@ -73,8 +73,8 @@ public class SymbolTable{
 	 * Tests if a given identifier is in the scope of any declaration.
 	 *
 	 * @param id
-	 * @return <code>true</code> if there is any enclosing scope in which
-	 * the identifier is declared; <code>false</code> otherwise.
+	 * @return the Type of the given identifier, or null if the variable 
+	 * is not declared in any scope.
 	 */
 	public Types contains(String id) {
 		Types contained = null;
