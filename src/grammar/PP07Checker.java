@@ -11,6 +11,8 @@ import grammar.GrammarParser.EnumStatContext;
 import grammar.GrammarParser.ExprStatContext;
 import grammar.GrammarParser.FuncStatContext;
 import grammar.GrammarParser.IfStatContext;
+import grammar.GrammarParser.LockStatContext;
+import grammar.GrammarParser.LockedExprContext;
 import grammar.GrammarParser.ProgramContext;
 import grammar.GrammarParser.RunStatContext;
 import grammar.GrammarParser.StatContext;
@@ -137,7 +139,16 @@ public class PP07Checker extends GrammarBaseListener {
 		} else {
 			addError("Function " + ctx.ID(0).getText() + " not declared in program");
 		}
+		
+		
 	}
+	
+	@Override
+	public void enterLockStat(LockStatContext ctx) {
+		
+	}
+	
+	
 	
 
 	@Override
@@ -146,6 +157,7 @@ public class PP07Checker extends GrammarBaseListener {
 			addError("Program contains no main method");
 		}
 	}
+	
 	public Type getType(TypeContext ctx) {
 		if (ctx.getToken(GrammarParser.BOOL, 0) != null) return Type.BOOL;
 		if (ctx.getToken(GrammarParser.INT, 0) != null) return Type.INT;
