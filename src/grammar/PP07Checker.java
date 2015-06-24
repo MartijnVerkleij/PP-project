@@ -149,7 +149,7 @@ public class PP07Checker extends GrammarBaseListener {
 	public Type getType(TypeContext ctx) {
 		if (ctx.getToken(GrammarParser.BOOL, 0) != null) return Type.BOOL;
 		if (ctx.getToken(GrammarParser.INT, 0) != null) return Type.INT;
-//		if (ctx.getToken(GrammarParser.INT, 0) != null) return Types.VOID;
+//		if (ctx.getToken(GrammarParser.INT, 0) != null) return TypeSize.VOID;
 		return null;
 	}
 
