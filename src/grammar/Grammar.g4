@@ -37,13 +37,13 @@ program	: stat+;
 */
 stat	: GLOBAL? type ID (ASS expr)? SEMI							#declStat
 		| ID ASS expr SEMI 											#assStat
-		| GLOBAL? ENUM ID ASS LBRACE EID (COMMA EID)* RBRACE SEMI	#enumStat
+		| ENUM ID ASS LBRACE EID (COMMA EID)* RBRACE SEMI			#enumStat
 		| IF LPAR expr RPAR stat (ELSE stat)?						#ifStat
 		| WHILE LPAR expr RPAR stat									#whileStat
 		| block														#blockStat
 		| type ID LPAR (type ID (COMMA type ID)*)? RPAR block		#funcStat
 		| expr SEMI													#exprStat
-		| RUN ID LPAR (ID ((COMMA expr)*)?) RPAR SEMI				#runStat
+		| RUN ID LPAR (ID (COMMA expr)*) RPAR SEMI					#runStat
 		| LOCK ID SEMI												#lockStat
 		| UNLOCK ID SEMI											#unlockStat
 		| RETURN expr SEMI											#returnStat
