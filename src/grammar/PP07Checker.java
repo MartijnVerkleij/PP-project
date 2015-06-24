@@ -25,16 +25,33 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 
 public class PP07Checker extends GrammarBaseListener {
-	
-	private ParseTree checkedTree;
-	private List<String> errors = new ArrayList<String>();
-	private Functions functions;
-	private ParseTreeProperty<Type> nodeType = new ParseTreeProperty<Type>();
 
-	private SymbolTable symbolTable = new SymbolTable();
-	
+	/**
+	 * Result of the latest call of {@link #check}.
+	 */
+	private Result result;
+
+	/**
+	 * Variable scopes for the latest call of {@link #check}.
+	 */
+	private SymbolTable symbolTable;
+
+	/**
+	 * List of errors collected in the latest call of {@link #check}.
+	 */
+	private List<String> errors;
+
+	/**
+	 * List of functions collected in the latest call of {@link #check}.
+	 */
+	private Functions functions;
+
+
 	public ParseTree check(ParseTree tree) {
-		functions = new PP07FunctionWalker().walkFunctions(tree);
+		this.result = new Result();
+		this.symbolTable = new SymbolTable();
+		this.errors = new ArrayList<>();
+		this.functions = new PP07FunctionWalker().walkFunctions(tree);
 		new ParseTreeWalker().walk(this, tree);
 		if (errors.isEmpty()) {
 			return tree;
@@ -52,16 +69,15 @@ public class PP07Checker extends GrammarBaseListener {
 	
 	@Override
 	public void enterDeclStat(DeclStatContext ctx) {
-		boolean error = false;
 		if (ctx.GLOBAL() == null) {
-			if (!symbolTable.add(ctx.ID().getText(), nodeType.get(ctx.type())))
+			if (!symbolTable.add(ctx.ID().getText(), getType(ctx.type())))
 				addError("Variable name already declared in local scope");
 		} else {
-			if (!symbolTable.addGlobal(ctx.ID().getText(), nodeType.get(ctx.type())))
-				addError("Variable name already declared in global scope");;
+			if (!symbolTable.addGlobal(ctx.ID().getText(), getType(ctx.type())))
+				addError("Variable name already declared in global scope");
 		}
 		if (ctx.expr() != null) {
-			if (nodeType.get(ctx.type()) != nodeType.get(ctx.expr()))
+			if (getType(ctx.type()) != getType(ctx.expr()))
 				addError("Assigned type does not equal declared type");
 		}	
 	}
@@ -70,10 +86,10 @@ public class PP07Checker extends GrammarBaseListener {
 	public void enterAssStat(AssStatContext ctx) {
 		if (symbolTable.type(ctx.ID().getText()) == null)
 			addError("\"" + ctx.ID().getText() + "\" was not declared in any scope");
-		if (symbolTable.type(ctx.ID().getText()) != nodeType.get(ctx.expr())) {
+		if (symbolTable.type(ctx.ID().getText()) != getType(ctx.expr())) {
 			addError("Assignment is of wrong type. Expected: " + 
 					symbolTable.type(ctx.ID().getText()) +
-					" Actual: " + nodeType.get(ctx.expr()));
+					" Actual: " + getType(ctx.expr()));
 		}
 	}
 	
@@ -86,14 +102,14 @@ public class PP07Checker extends GrammarBaseListener {
 	
 	@Override
 	public void enterIfStat(IfStatContext ctx) {
-		if (nodeType.get(ctx.expr()) != Type.BOOL) {
+		if (getType(ctx.expr()) != Type.BOOL) {
 			addError("If statement requires a boolean expression");
 		}
 	}
 	
 	@Override
 	public void enterWhileStat(WhileStatContext ctx) {
-		if (nodeType.get(ctx.expr()) != Type.BOOL) {
+		if (getType(ctx.expr()) != Type.BOOL) {
 			addError("While statement requires a boolean expression");
 		}
 	}
@@ -101,7 +117,7 @@ public class PP07Checker extends GrammarBaseListener {
 	@Override
 	public void enterBlockStat(BlockStatContext ctx) {
 		// fall-through of enterBlock()
-		nodeType.put(ctx, nodeType.get(ctx.block()));
+		setType(ctx, getType(ctx.block()));
 	}
 	
 	@Override
@@ -123,11 +139,11 @@ public class PP07Checker extends GrammarBaseListener {
 			if (ctx.expr().size() == function
 					.getArgumentCount()) {
 				for (int i = 0; i < ctx.expr().size(); i++) {
-					if (!nodeType.get(ctx.expr(i)).equals(function.getArgument(i))) {
+					if (!getType(ctx.expr(i)).equals(function.getArgument(i))) {
 						addError("Argument " + i + " of run call " + name 
 								+ " did not match expected type. "
 								+ "Expected: " + function.getArgument(i) 
-								+ " Actual: " + nodeType.get(ctx.expr(i)));
+								+ " Actual: " + getType(ctx.expr(i)));
 					}
 				}
 			} else {
@@ -157,15 +173,22 @@ public class PP07Checker extends GrammarBaseListener {
 			addError("Program contains no main method");
 		}
 	}
-	
-	public Type getType(TypeContext ctx) {
-		if (ctx.getToken(GrammarParser.BOOL, 0) != null) return Type.BOOL;
-		if (ctx.getToken(GrammarParser.INT, 0) != null) return Type.INT;
-//		if (ctx.getToken(GrammarParser.INT, 0) != null) return TypeSize.VOID;
-		return null;
-	}
 
 	private void addError(String string) {
 		errors.add(string);
+	}
+
+	/**
+	 * Convenience method to add a type to the result.
+	 */
+	private void setType(ParseTree node, Type type) {
+		this.result.setType(node, type);
+	}
+
+	/**
+	 * Returns the type of a given expression or type node.
+	 */
+	private Type getType(ParseTree node) {
+		return this.result.getType(node);
 	}
 }
