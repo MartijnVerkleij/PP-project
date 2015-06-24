@@ -14,9 +14,11 @@ import grammar.GrammarParser.IfStatContext;
 import grammar.GrammarParser.LockStatContext;
 import grammar.GrammarParser.LockedExprContext;
 import grammar.GrammarParser.ProgramContext;
+import grammar.GrammarParser.ReturnStatContext;
 import grammar.GrammarParser.RunStatContext;
 import grammar.GrammarParser.StatContext;
 import grammar.GrammarParser.TypeContext;
+import grammar.GrammarParser.UnlockStatContext;
 import grammar.GrammarParser.WhileStatContext;
 
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -45,13 +47,17 @@ public class PP07Checker extends GrammarBaseListener {
 	 * List of functions collected in the latest call of {@link #check}.
 	 */
 	private Functions functions;
+	private Locks locks;
+	private ParseTreeProperty<Type> nodeType = new ParseTreeProperty<Type>();
 
 
 	public ParseTree check(ParseTree tree) {
+		PP07PrepWalker walker = new PP07PrepWalker();
 		this.result = new Result();
 		this.symbolTable = new SymbolTable();
 		this.errors = new ArrayList<>();
-		this.functions = new PP07FunctionWalker().walkFunctions(tree);
+		this.functions = walker.getFunctions();
+		this.locks = walker.getLocks()
 		new ParseTreeWalker().walk(this, tree);
 		if (errors.isEmpty()) {
 			return tree;
@@ -68,71 +74,72 @@ public class PP07Checker extends GrammarBaseListener {
 	}
 	
 	@Override
-	public void enterDeclStat(DeclStatContext ctx) {
+	public void exitDeclStat(DeclStatContext ctx) {
+		boolean error = false;
 		if (ctx.GLOBAL() == null) {
-			if (!symbolTable.add(ctx.ID().getText(), getType(ctx.type())))
+			if (!symbolTable.add(ctx.ID().getText(), nodeType.get(ctx.type())))
 				addError("Variable name already declared in local scope");
 		} else {
-			if (!symbolTable.addGlobal(ctx.ID().getText(), getType(ctx.type())))
-				addError("Variable name already declared in global scope");
+			if (!symbolTable.addGlobal(ctx.ID().getText(), nodeType.get(ctx.type())))
+				addError("Variable name already declared in global scope");;
 		}
 		if (ctx.expr() != null) {
-			if (getType(ctx.type()) != getType(ctx.expr()))
+			if (nodeType.get(ctx.type()) != nodeType.get(ctx.expr()))
 				addError("Assigned type does not equal declared type");
 		}	
 	}
 	
 	@Override
-	public void enterAssStat(AssStatContext ctx) {
+	public void exitAssStat(AssStatContext ctx) {
 		if (symbolTable.type(ctx.ID().getText()) == null)
 			addError("\"" + ctx.ID().getText() + "\" was not declared in any scope");
-		if (symbolTable.type(ctx.ID().getText()) != getType(ctx.expr())) {
+		if (symbolTable.type(ctx.ID().getText()) != nodeType.get(ctx.expr())) {
 			addError("Assignment is of wrong type. Expected: " + 
 					symbolTable.type(ctx.ID().getText()) +
-					" Actual: " + getType(ctx.expr()));
+					" Actual: " + nodeType.get(ctx.expr()));
 		}
 	}
 	
 	@Override
-	public void enterEnumStat(EnumStatContext ctx) {
+	public void exitEnumStat(EnumStatContext ctx) {
 		if (!symbolTable.addGlobal(ctx.ID().getText(), Type.ENUM))
 			addError("Variable name already declared in global scope");
 	}
 	
 	
 	@Override
-	public void enterIfStat(IfStatContext ctx) {
-		if (getType(ctx.expr()) != Type.BOOL) {
+	public void exitIfStat(IfStatContext ctx) {
+		if (nodeType.get(ctx.expr()) != Type.BOOL) {
 			addError("If statement requires a boolean expression");
 		}
 	}
 	
 	@Override
-	public void enterWhileStat(WhileStatContext ctx) {
-		if (getType(ctx.expr()) != Type.BOOL) {
+	public void exitWhileStat(WhileStatContext ctx) {
+		if (nodeType.get(ctx.expr()) != Type.BOOL) {
 			addError("While statement requires a boolean expression");
 		}
 	}
 	
 	@Override
-	public void enterBlockStat(BlockStatContext ctx) {
+	public void exitBlockStat(BlockStatContext ctx) {
 		// fall-through of enterBlock()
 		setType(ctx, getType(ctx.block()));
 	}
 	
 	@Override
-	public void enterFuncStat(FuncStatContext ctx) {
+	public void exitFuncStat(FuncStatContext ctx) {
 		// already done in FunctionWalker
 		
 	}
 	
 	@Override
-	public void enterExprStat(ExprStatContext ctx) {
+	public void exitExprStat(ExprStatContext ctx) {
 		// left blank
 	}
 	
 	@Override
-	public void enterRunStat(RunStatContext ctx) {
+	public void exitRunStat(RunStatContext ctx) {
 		String name = ctx.ID(0).getText();
 		Function function = functions.getFunction(name);
 		if (functions.hasFunction(name)) {
@@ -151,21 +158,39 @@ public class PP07Checker extends GrammarBaseListener {
 						+ "Expected: " + function.getArgumentCount()
 						+ " Actual: " + ctx.expr().size());
 			}
-			
 		} else {
 			addError("Function " + ctx.ID(0).getText() + " not declared in program");
 		}
-		
-		
 	}
 	
 	@Override
-	public void enterLockStat(LockStatContext ctx) {
-		
+	public void exitLockStat(LockStatContext ctx) {
+		// left blank
 	}
 	
+	@Override
+	public void exitUnlockStat(UnlockStatContext ctx) {
+		if (!locks.releaseLock(ctx.ID().getText()))
+			addError("Lock " + ctx.ID().getText() + "never declared in program");
+	}
 	
-	
+	@Override
+	public void exitReturnStat(ReturnStatContext ctx) {
+		
+		ParseTree stat = ctx;
+		while (!(stat instanceof FuncStatContext)) {
+			if (ctx.getParent().getChild(ctx.getParent().getChildCount() - 1) != ctx) {
+				addError("Return statement is not last statement.");
+			}
+			stat = stat.getParent();
+		}
+		FuncStatContext function = ((FuncStatContext) stat);
+		if (!checkType(function.type(0), getType(ctx.expr()))) {
+			addError("Return statement must be of type " + getType(function.type(0)) 
+					+ " but was of type " + getType(ctx.expr()));
+		}
+		
+	}
 
 	@Override
 	public void exitProgram(ProgramContext ctx) {
