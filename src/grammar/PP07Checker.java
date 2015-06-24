@@ -2,7 +2,6 @@ package grammar;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import grammar.Functions.Function;
 import grammar.GrammarParser.AssStatContext;
@@ -17,8 +16,6 @@ import grammar.GrammarParser.RunStatContext;
 import grammar.GrammarParser.StatContext;
 import grammar.GrammarParser.TypeContext;
 import grammar.GrammarParser.WhileStatContext;
-import grammar.Type.Types;
-import grammar.exception.ParseException;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
@@ -30,7 +27,8 @@ public class PP07Checker extends GrammarBaseListener {
 	private ParseTree checkedTree;
 	private List<String> errors = new ArrayList<String>();
 	private Functions functions;
-	private ParseTreeProperty<Type.Types> nodeType = new ParseTreeProperty<Type.Types>();
+	private ParseTreeProperty<Type> nodeType = new ParseTreeProperty<Type>();
+
 	private SymbolTable symbolTable = new SymbolTable();
 	
 	public ParseTree check(ParseTree tree) {
@@ -68,32 +66,32 @@ public class PP07Checker extends GrammarBaseListener {
 	
 	@Override
 	public void enterAssStat(AssStatContext ctx) {
-		if (symbolTable.contains(ctx.ID().getText()) == null) 
+		if (symbolTable.type(ctx.ID().getText()) == null)
 			addError("\"" + ctx.ID().getText() + "\" was not declared in any scope");
-		if (symbolTable.contains(ctx.ID().getText()) != nodeType.get(ctx.expr())) {
+		if (symbolTable.type(ctx.ID().getText()) != nodeType.get(ctx.expr())) {
 			addError("Assignment is of wrong type. Expected: " + 
-					symbolTable.contains(ctx.ID().getText()) + 
+					symbolTable.type(ctx.ID().getText()) +
 					" Actual: " + nodeType.get(ctx.expr()));
 		}
 	}
 	
 	@Override
 	public void enterEnumStat(EnumStatContext ctx) {
-		if (!symbolTable.addGlobal(ctx.ID().getText(), Types.ENUM))
+		if (!symbolTable.addGlobal(ctx.ID().getText(), Type.ENUM))
 			addError("Variable name already declared in global scope");
 	}
 	
 	
 	@Override
 	public void enterIfStat(IfStatContext ctx) {
-		if (nodeType.get(ctx.expr()) != Types.BOOL) {
+		if (nodeType.get(ctx.expr()) != Type.BOOL) {
 			addError("If statement requires a boolean expression");
 		}
 	}
 	
 	@Override
 	public void enterWhileStat(WhileStatContext ctx) {
-		if (nodeType.get(ctx.expr()) != Types.BOOL) {
+		if (nodeType.get(ctx.expr()) != Type.BOOL) {
 			addError("While statement requires a boolean expression");
 		}
 	}
@@ -148,10 +146,10 @@ public class PP07Checker extends GrammarBaseListener {
 			addError("Program contains no main method");
 		}
 	}
-	public Types getType(TypeContext ctx) {
-		if (ctx.getToken(GrammarParser.BOOL, 0) != null) return Types.BOOL;
-		if (ctx.getToken(GrammarParser.INT, 0) != null) return Types.INT;
-		if (ctx.getToken(GrammarParser.INT, 0) != null) return Types.VOID;
+	public Type getType(TypeContext ctx) {
+		if (ctx.getToken(GrammarParser.BOOL, 0) != null) return Type.BOOL;
+		if (ctx.getToken(GrammarParser.INT, 0) != null) return Type.INT;
+//		if (ctx.getToken(GrammarParser.INT, 0) != null) return Types.VOID;
 		return null;
 	}
 

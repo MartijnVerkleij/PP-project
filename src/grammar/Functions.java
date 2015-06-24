@@ -1,6 +1,5 @@
 package grammar;
 
-import grammar.Type.Types;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +8,7 @@ public class Functions {
 
 	List<Function> functions = new ArrayList<Function>();
 	
-	public boolean addFunction(String name, Types ... args) {
+	public boolean addFunction(String name, Type ... args) {
 		if (getFunction(name) != null) {
 			functions.add(new Function(name, args));
 			return true;
@@ -37,11 +36,11 @@ public class Functions {
 
 	public class Function {
 		private String name;
-		private List<Types> arguments = new ArrayList<Types>();
+		private List<Type> arguments = new ArrayList<Type>();
 		
-		public Function(String name, Types ... args) {
+		public Function(String name, Type ... args) {
 			this.name = name;
-			for (Types arg : args) {
+			for (Type arg : args) {
 				arguments.add(arg);
 			}
 		}
@@ -54,7 +53,7 @@ public class Functions {
 			return arguments.size();
 		}
 		
-		public Types getArgument(int i) {
+		public Type getArgument(int i) {
 			return arguments.get(i);
 		}
 	}

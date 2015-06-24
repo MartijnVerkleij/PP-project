@@ -2,7 +2,6 @@ package grammar;
 
 import grammar.GrammarParser.FuncStatContext;
 import grammar.GrammarParser.TypeContext;
-import grammar.Type.Types;
 
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -20,7 +19,7 @@ public class PP07FunctionWalker extends GrammarBaseListener {
 	
 	@Override
 	public void enterFuncStat(FuncStatContext ctx) {
-		Types[] arguments = new Types[ctx.ID().size() - 1];
+		Type[] arguments = new Type[ctx.ID().size() - 1];
 		for (int i = 0; i < ctx.ID().size() - 1; i++) {
 			arguments[i] = getType(ctx.type( i + 1));
 		}
@@ -29,10 +28,10 @@ public class PP07FunctionWalker extends GrammarBaseListener {
 	}
 	
 	
-	public Types getType(TypeContext ctx) {
-		if (ctx.getToken(GrammarParser.BOOL, 0) != null) return Types.BOOL;
-		if (ctx.getToken(GrammarParser.INT, 0) != null) return Types.INT;
-		if (ctx.getToken(GrammarParser.INT, 0) != null) return Types.VOID;
+	public Type getType(TypeContext ctx) {
+		if (ctx.getToken(GrammarParser.BOOL, 0) != null) return Type.BOOL;
+		if (ctx.getToken(GrammarParser.INT, 0) != null) return Type.INT;
+//		if (ctx.getToken(GrammarParser.INT, 0) != null) return Type.VOID;
 		return null;
 	}
 	
