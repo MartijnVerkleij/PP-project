@@ -3,6 +3,7 @@ package grammar;
 import grammar.Functions.Function;
 import grammar.GrammarParser.*;
 import grammar.exception.ParseException;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -172,9 +173,28 @@ public class PP07Checker extends GrammarBaseListener {
 		}
 		FuncStatContext function = ((FuncStatContext) stat);
 		checkType(function.type(0), getType(ctx.expr()));
-
+	}
+	
+	@Override
+	public void exitBlock(BlockContext ctx) {
+			
 	}
 
+	@Override
+	public void exitIntType(IntTypeContext ctx) {
+		setType(ctx, Type.INT);
+	}
+	
+	@Override
+	public void exitBoolType(BoolTypeContext ctx) {
+		setType(ctx, Type.INT);
+	}
+	
+	@Override
+	public void exitVoidType(VoidTypeContext ctx) {
+		setType(ctx, Type.INT);
+	}
+	
 	@Override
 	public void exitProgram(ProgramContext ctx) {
 		if (!functions.hasFunction("main")) {
