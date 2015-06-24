@@ -175,12 +175,12 @@ public class PP07Checker extends GrammarBaseListener {
 
 	@Override
 	public void exitBoolType(BoolTypeContext ctx) {
-		setType(ctx, Type.INT);
+		setType(ctx, Type.BOOL);
 	}
 
 	@Override
 	public void exitVoidType(VoidTypeContext ctx) {
-		setType(ctx, Type.INT);
+		setType(ctx, Type.VOID);
 	}
 
 	@Override
