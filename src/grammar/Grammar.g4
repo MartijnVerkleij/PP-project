@@ -55,7 +55,7 @@ stat	: GLOBAL? type ID (ASS expr)? SEMI							#declStat
 block 	: LBRACE stat* RBRACE
 		;
 
-/* Types
+/* TypeSize
 *	INT
 *		Integer type
 *	BOOL

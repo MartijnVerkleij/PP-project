@@ -1,5 +1,7 @@
 package grammar;
 
+import grammar.exception.ParseException;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -7,20 +9,20 @@ import java.util.Stack;
 public class SymbolTable {
 
 	// Global Scope
-	private Map<String, Type> globalTypes = new HashMap<String, Type>();
+	private Map<String, Type> globalTypes = new HashMap<>();
 	private Map<String, Integer> globalOffsets = new HashMap<>();
 	private int globalSize = 0;
 	// Local Scopes
 	private Stack<Map<String, Integer>> offsets = new Stack<>();
 	private Stack<Integer> size = new Stack<>();
-	private Stack<Map<String, Type>> types = new Stack<Map<String, Type>>();
+	private Stack<Map<String, Type>> types = new Stack<>();
 
 	/**
 	 * Adds a next deeper scope level.
 	 */
 	public void openScope() {
-		types.add(new HashMap<String, Type>());
-		offsets.add(new HashMap<String, Integer>());
+		types.add(new HashMap<>());
+		offsets.add(new HashMap<>());
 		size.add(0);
 	}
 
@@ -37,6 +39,7 @@ public class SymbolTable {
 
 	/**
 	 * Tries to declare a given identifier in the globalTypes scope.
+	 * Without length parameter
 	 *
 	 * @param id   name of the identifier
 	 * @param type type of the identifier
@@ -47,7 +50,35 @@ public class SymbolTable {
 		if (!globalTypes.containsKey(id)) {
 			globalTypes.put(id, type);
 			globalOffsets.put(id, this.globalSize);
-			globalSize += type.size();
+			try {
+				globalSize += TypeSize.getSize(type);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Tries to declare a given identifier in the globalTypes scope.
+	 * With length parameter
+	 *
+	 * @param id   name of the identifier
+	 * @param type type of the identifier
+	 * @return <code>true</code> if the identifier was added,
+	 * <code>false</code> if it was already declared in this scope.
+	 */
+	public boolean addGlobal(String id, Type type, int length) {
+		if (!globalTypes.containsKey(id)) {
+			globalTypes.put(id, type);
+			globalOffsets.put(id, this.globalSize);
+			try {
+				globalSize += TypeSize.getSize(type, length);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
 			return true;
 		} else {
 			return false;
@@ -56,6 +87,7 @@ public class SymbolTable {
 
 	/**
 	 * Tries to declare a given identifier in the deepest scope level.
+	 * Without length parameter
 	 *
 	 * @param id   name of the identifier
 	 * @param type type of the identifier
@@ -67,7 +99,38 @@ public class SymbolTable {
 		if (!types.isEmpty() && !types.peek().containsKey(id)) {
 			types.peek().put(id, type);
 			offsets.peek().put(id, this.size.peek());
-			int tempSize = size.pop() + type.size();
+			int tempSize = 0;
+			try {
+				tempSize = size.pop() + TypeSize.getSize(type);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
+			size.push(tempSize);
+			isGood = true;
+		}
+		return isGood;
+	}
+
+	/**
+	 * Tries to declare a given identifier in the deepest scope level.
+	 * With length parameter
+	 *
+	 * @param id   name of the identifier
+	 * @param type type of the identifier
+	 * @return <code>true</code> if the identifier was added,
+	 * <code>false</code> if it was already declared in this scope.
+	 */
+	public boolean add(String id, Type type, int length) {
+		boolean isGood = false;
+		if (!types.isEmpty() && !types.peek().containsKey(id)) {
+			types.peek().put(id, type);
+			offsets.peek().put(id, this.size.peek());
+			int tempSize = 0;
+			try {
+				tempSize = size.pop() + TypeSize.getSize(type, length);
+			} catch (ParseException e) {
+				e.printStackTrace();
+			}
 			size.push(tempSize);
 			isGood = true;
 		}
@@ -78,15 +141,9 @@ public class SymbolTable {
 	 * Returns the type of an identifier at the deepest level of the scope
 	 * where it is declared.
 	 *
-<<<<<<< HEAD
-	 * @param id
-	 * @return the Type of the given identifier, or null if the variable 
-	 * is not declared in any scope.
-=======
 	 * @param id name of the identifier
 	 * @return <code>Type</code> if there is any enclosing scope in which
 	 * the identifier is declared; <code>null</code> otherwise.
->>>>>>> 0334398f9914a0de254d5d73d10997243886ca19
 	 */
 	public Type type(String id) {
 		Type contained = null;
