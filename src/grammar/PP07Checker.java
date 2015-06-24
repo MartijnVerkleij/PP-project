@@ -196,6 +196,31 @@ public class PP07Checker extends GrammarBaseListener {
 	}
 	
 	@Override
+	public void exitFuncCall(FuncCallContext ctx) {
+		String name = ctx.ID().getText();
+		Function function = functions.getFunction(name);
+		if (functions.hasFunction(name)) {
+			if (ctx.expr().size() == function
+					.getArgumentCount()) {
+				for (int i = 0; i < ctx.expr().size(); i++) {
+					if (!getType(ctx.expr(i)).equals(function.getArgument(i))) {
+						addError("Argument " + i + " of run call " + name
+								+ " did not match expected type. "
+								+ "Expected: " + function.getArgument(i)
+								+ " Actual: " + getType(ctx.expr(i)));
+					}
+				}
+			} else {
+				addError("Argument count of call " + name + " did not match. "
+						+ "Expected: " + function.getArgumentCount()
+						+ " Actual: " + ctx.expr().size());
+			}
+		} else {
+			addError("Function " + ctx.ID().getText() + " not defined");
+		}
+	}
+	
+	@Override
 	public void exitProgram(ProgramContext ctx) {
 		if (!functions.hasFunction("main")) {
 			addError("Program contains no main method");
