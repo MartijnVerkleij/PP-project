@@ -1,6 +1,6 @@
 package grammar;
 
-import grammar.exception.ParseException;
+import grammar.exception.TypeException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,7 +52,7 @@ public class SymbolTable {
 			globalOffsets.put(id, this.globalSize);
 			try {
 				globalSize += TypeSize.getSize(type);
-			} catch (ParseException e) {
+			} catch (TypeException e) {
 				e.printStackTrace();
 			}
 			return true;
@@ -76,7 +76,7 @@ public class SymbolTable {
 			globalOffsets.put(id, this.globalSize);
 			try {
 				globalSize += TypeSize.getSize(type, length);
-			} catch (ParseException e) {
+			} catch (TypeException e) {
 				e.printStackTrace();
 			}
 			return true;
@@ -102,7 +102,7 @@ public class SymbolTable {
 			int tempSize = 0;
 			try {
 				tempSize = size.pop() + TypeSize.getSize(type);
-			} catch (ParseException e) {
+			} catch (TypeException e) {
 				e.printStackTrace();
 			}
 			size.push(tempSize);
@@ -128,7 +128,7 @@ public class SymbolTable {
 			int tempSize = 0;
 			try {
 				tempSize = size.pop() + TypeSize.getSize(type, length);
-			} catch (ParseException e) {
+			} catch (TypeException e) {
 				e.printStackTrace();
 			}
 			size.push(tempSize);
