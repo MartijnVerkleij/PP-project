@@ -14,9 +14,11 @@ import grammar.GrammarParser.IfStatContext;
 import grammar.GrammarParser.LockStatContext;
 import grammar.GrammarParser.LockedExprContext;
 import grammar.GrammarParser.ProgramContext;
+import grammar.GrammarParser.ReturnStatContext;
 import grammar.GrammarParser.RunStatContext;
 import grammar.GrammarParser.StatContext;
 import grammar.GrammarParser.TypeContext;
+import grammar.GrammarParser.UnlockStatContext;
 import grammar.GrammarParser.WhileStatContext;
 
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -29,12 +31,16 @@ public class PP07Checker extends GrammarBaseListener {
 	private ParseTree checkedTree;
 	private List<String> errors = new ArrayList<String>();
 	private Functions functions;
+	private Locks locks;
 	private ParseTreeProperty<Type> nodeType = new ParseTreeProperty<Type>();
 
 	private SymbolTable symbolTable = new SymbolTable();
 	
 	public ParseTree check(ParseTree tree) {
-		functions = new PP07FunctionWalker().walkFunctions(tree);
+		PP07PrepWalker walker = new PP07PrepWalker();
+		walker.walk(tree);
+		functions = walker.getFunctions();
+		locks = walker.getLocks()
 		new ParseTreeWalker().walk(this, tree);
 		if (errors.isEmpty()) {
 			return tree;
@@ -51,7 +57,7 @@ public class PP07Checker extends GrammarBaseListener {
 	}
 	
 	@Override
-	public void enterDeclStat(DeclStatContext ctx) {
+	public void exitDeclStat(DeclStatContext ctx) {
 		boolean error = false;
 		if (ctx.GLOBAL() == null) {
 			if (!symbolTable.add(ctx.ID().getText(), nodeType.get(ctx.type())))
@@ -67,7 +73,7 @@ public class PP07Checker extends GrammarBaseListener {
 	}
 	
 	@Override
-	public void enterAssStat(AssStatContext ctx) {
+	public void exitAssStat(AssStatContext ctx) {
 		if (symbolTable.type(ctx.ID().getText()) == null)
 			addError("\"" + ctx.ID().getText() + "\" was not declared in any scope");
 		if (symbolTable.type(ctx.ID().getText()) != nodeType.get(ctx.expr())) {
@@ -78,45 +84,45 @@ public class PP07Checker extends GrammarBaseListener {
 	}
 	
 	@Override
-	public void enterEnumStat(EnumStatContext ctx) {
+	public void exitEnumStat(EnumStatContext ctx) {
 		if (!symbolTable.addGlobal(ctx.ID().getText(), Type.ENUM))
 			addError("Variable name already declared in global scope");
 	}
 	
 	
 	@Override
-	public void enterIfStat(IfStatContext ctx) {
+	public void exitIfStat(IfStatContext ctx) {
 		if (nodeType.get(ctx.expr()) != Type.BOOL) {
 			addError("If statement requires a boolean expression");
 		}
 	}
 	
 	@Override
-	public void enterWhileStat(WhileStatContext ctx) {
+	public void exitWhileStat(WhileStatContext ctx) {
 		if (nodeType.get(ctx.expr()) != Type.BOOL) {
 			addError("While statement requires a boolean expression");
 		}
 	}
 	
 	@Override
-	public void enterBlockStat(BlockStatContext ctx) {
+	public void exitBlockStat(BlockStatContext ctx) {
 		// fall-through of enterBlock()
 		nodeType.put(ctx, nodeType.get(ctx.block()));
 	}
 	
 	@Override
-	public void enterFuncStat(FuncStatContext ctx) {
+	public void exitFuncStat(FuncStatContext ctx) {
 		// already done in FunctionWalker
 		
 	}
 	
 	@Override
-	public void enterExprStat(ExprStatContext ctx) {
+	public void exitExprStat(ExprStatContext ctx) {
 		// left blank
 	}
 	
 	@Override
-	public void enterRunStat(RunStatContext ctx) {
+	public void exitRunStat(RunStatContext ctx) {
 		String name = ctx.ID(0).getText();
 		Function function = functions.getFunction(name);
 		if (functions.hasFunction(name)) {
@@ -135,21 +141,39 @@ public class PP07Checker extends GrammarBaseListener {
 						+ "Expected: " + function.getArgumentCount()
 						+ " Actual: " + ctx.expr().size());
 			}
-			
 		} else {
 			addError("Function " + ctx.ID(0).getText() + " not declared in program");
 		}
-		
-		
 	}
 	
 	@Override
-	public void enterLockStat(LockStatContext ctx) {
-		
+	public void exitLockStat(LockStatContext ctx) {
+		// left blank
 	}
 	
+	@Override
+	public void exitUnlockStat(UnlockStatContext ctx) {
+		if (!locks.releaseLock(ctx.ID().getText()))
+			addError("Lock " + ctx.ID().getText() + "never declared in program");
+	}
 	
-	
+	@Override
+	public void exitReturnStat(ReturnStatContext ctx) {
+		
+		ParseTree stat = ctx;
+		while (!(stat instanceof FuncStatContext)) {
+			if (ctx.getParent().getChild(ctx.getParent().getChildCount() - 1) != ctx) {
+				addError("Return statement is not last statement.");
+			}
+			stat = stat.getParent();
+		}
+		FuncStatContext function = ((FuncStatContext) stat);
+		if (!checkType(function.type(0), getType(ctx.expr()))) {
+			addError("Return statement must be of type " + getType(function.type(0)) 
+					+ " but was of type " + getType(ctx.expr()));
+		}
+		
+	}
 
 	@Override
 	public void exitProgram(ProgramContext ctx) {
@@ -161,7 +185,7 @@ public class PP07Checker extends GrammarBaseListener {
 	public Type getType(TypeContext ctx) {
 		if (ctx.getToken(GrammarParser.BOOL, 0) != null) return Type.BOOL;
 		if (ctx.getToken(GrammarParser.INT, 0) != null) return Type.INT;
-//		if (ctx.getToken(GrammarParser.INT, 0) != null) return TypeSize.VOID;
+		if (ctx.getToken(GrammarParser.INT, 0) != null) return TypeSize.VOID;
 		return null;
 	}
 

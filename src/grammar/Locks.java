@@ -9,41 +9,44 @@ public class Locks {
 
 	Map<String, Lock> locks = new HashMap<String, Lock>();
 	
-	public boolean registerLock(String id) {
-		if (locks.containsKey(id)) {
-			return false;
-		} else {
-			locks.put(id, new Lock());
-			return true;
-		}
-	}
-	
+//	public boolean registerLock(String id) {
+//		if (locks.containsKey(id)) {
+//			return false;
+//		} else {
+//			locks.put(id, new Lock());
+//			return true;
+//		}
+//	}
+//	
 	/**
 	 * Attempts to acquire the lock on the lock with a given ID.
-	 * It does NOT report whether a lock with that ID actually
-	 * exists, it will simply return false if there is none.
+	 * A new lock will be created if it did not exist already.
 	 * @param id name of lock that we want to acquire.
-	 * @return <code>true</code> if it was acquired successfully. 
-	 * <code>false</code> if the lock was not successfully acquired, 
-	 * or if the lock dies not exist at all.
+	 * @return <code>true</code> if the lock was acquired successfully. 
+	 * <code>false</code> if the lock was not successfully acquired.
 	 */
 	
 	public boolean acquireLock(String id) {
 		if (locks.containsKey(id)) {
 			return locks.get(id).acquire();
 		} else {
-			return false;
+			locks.put(id, new Lock());
+			return locks.get(id).acquire();
 		}
 	}
 	
 	/**
 	 * Releases the lock on a lock with the given ID, if it exists. 
 	 * @param id lock to release.
+	 * @return <code>true</code> if the lock was released successfully.
+	 * <code>false</code> if there is no lock with the given ID.
 	 */
-	public void releaseLock(String id) {
+	public boolean releaseLock(String id) {
 		if (locks.containsKey(id)) {
 			locks.get(id).release();
+			return true;
 		}
+		return false;
 	}
 	
 	
