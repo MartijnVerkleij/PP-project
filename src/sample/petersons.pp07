@@ -6,17 +6,17 @@ global bool flag1 = false;
 global int turn;
 
 void p0() {
-	lock 0;
+	lock a;
 	flag0 = true;
 	turn = 1;
-	unlock 0;
+	unlock a;
 
 	bool condition = false;
 
 	while (condition) {
-		lock 0;
+		lock a;
 		condition = flag1 && turn == 1;
-		unlock 0;
+		unlock a;
 	}
 
 	// critical section
@@ -25,17 +25,17 @@ void p0() {
 }
 
 void p1() {
-	lock 0;
+	lock a;
 	flag1 = true;
 	turn = 0;
-	unlock 0;
+	unlock a;
 
 	bool condition = false;
 
 	while (condition) {
-		lock 0;
+		lock a;
 		condition = flag0 && turn == 0;
-		unlock 0;
+		unlock a;
 	}
 
 	// critical section
@@ -45,7 +45,7 @@ void p1() {
 
 void main() {
 	while (i > 0) {
-		run i (p0());
-		run id (p1());
+		run i (p0);
+		run id (p1);
 	}
 }

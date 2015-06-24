@@ -20,8 +20,8 @@ abstract public class Type {
 	 * The singleton instance of the {@link Char} type.
 	 */
 	public static final Type CHAR = new Char();
-	
-	//TODO add void and enum
+
+	public static final Type VOID = new Void();
 	private final TypeKind kind;
 
 	public Type(TypeKind kind) {
@@ -82,6 +82,52 @@ abstract public class Type {
 		@Override
 		public String toString() {
 			return "Char";
+		}
+	}
+
+	static public class Void extends Type {
+		private Void() {
+			super(TypeKind.VOID);
+		}
+
+		@Override
+		public int size() {
+			return 0;
+		}
+
+		@Override
+		public String toString() {
+			return "Void";
+		}
+	}
+
+	static public class Enum extends Type {
+		private final int lower;
+		private final int upper;
+
+		private Enum(int lower, int upper) {
+			super(TypeKind.ENUM);
+			assert upper >= lower;
+			this.lower = lower;
+			this.upper = upper;
+		}
+
+		public int getLower() {
+			return lower;
+		}
+
+		public int getUpper() {
+			return upper;
+		}
+
+		@Override
+		public int size() {
+			return (getUpper() - getLower() + 1) * 4;
+		}
+
+		@Override
+		public String toString() {
+			return "Enum";
 		}
 	}
 
