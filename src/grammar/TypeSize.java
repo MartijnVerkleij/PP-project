@@ -1,6 +1,6 @@
 package grammar;
 
-import grammar.exception.ParseException;
+import grammar.exception.TypeException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,12 +20,12 @@ public class TypeSize {
 		return 4 * length;
 	}
 
-	private static int getArray(int length, Type elemType) throws ParseException {
+	private static int getArray(int length, Type elemType) throws TypeException {
 		assert baseTypes.contains(elemType);
 		return getSize(elemType) * length;
 	}
 
-	public static int getSize(Type type) throws ParseException {
+	public static int getSize(Type type) throws TypeException {
 		switch (type) {
 			case INT:
 				return INT;
@@ -34,51 +34,51 @@ public class TypeSize {
 			case CHAR:
 				return CHAR;
 			case VOID:
-				throw new ParseException("Cannot add 'void' as a variable");
+				throw new TypeException("Cannot add 'void' as a variable");
 			case ENUM:
-				throw new ParseException("Type not supported: " + type.toString() + ". Use getSize(Type type, int length) instead.");
+				throw new TypeException("Type not supported: " + type.toString() + ". Use getSize(Type type, int length) instead.");
 			case ARRAY:
-				throw new ParseException("Type not supported: " + type.toString() + ". Use getSize(Type type, int length, Type elemType) instead.");
+				throw new TypeException("Type not supported: " + type.toString() + ". Use getSize(Type type, int length, Type elemType) instead.");
 			default:
-				throw new ParseException("Type not defined: " + type.toString());
+				throw new TypeException("Type not defined: " + type.toString());
 		}
 	}
 
-	public static int getSize(Type type, int length) throws ParseException {
+	public static int getSize(Type type, int length) throws TypeException {
 		switch (type) {
 			case INT:
-				throw new ParseException("Type not supported: " + type.toString() + ". Use getSize(Type type) instead.");
+				throw new TypeException("Type not supported: " + type.toString() + ". Use getSize(Type type) instead.");
 			case BOOL:
-				throw new ParseException("Type not supported: " + type.toString() + ". Use getSize(Type type) instead.");
+				throw new TypeException("Type not supported: " + type.toString() + ". Use getSize(Type type) instead.");
 			case CHAR:
-				throw new ParseException("Type not supported: " + type.toString() + ". Use getSize(Type type) instead.");
+				throw new TypeException("Type not supported: " + type.toString() + ". Use getSize(Type type) instead.");
 			case VOID:
-				throw new ParseException("Cannot add 'void' as a variable");
+				throw new TypeException("Cannot add 'void' as a variable");
 			case ENUM:
 				return getEnum(length);
 			case ARRAY:
-				throw new ParseException("Type not supported: " + type.toString() + ". Use getSize(Type type, int length, Type elemType) instead.");
+				throw new TypeException("Type not supported: " + type.toString() + ". Use getSize(Type type, int length, Type elemType) instead.");
 			default:
-				throw new ParseException("Type not defined: " + type.toString());
+				throw new TypeException("Type not defined: " + type.toString());
 		}
 	}
 
-	public static int getSize(Type type, int length, Type elemType) throws ParseException {
+	public static int getSize(Type type, int length, Type elemType) throws TypeException {
 		switch (type) {
 			case INT:
-				throw new ParseException("Type not supported: " + type.toString() + ". Use getSize(Type type) instead.");
+				throw new TypeException("Type not supported: " + type.toString() + ". Use getSize(Type type) instead.");
 			case BOOL:
-				throw new ParseException("Type not supported: " + type.toString() + ". Use getSize(Type type) instead.");
+				throw new TypeException("Type not supported: " + type.toString() + ". Use getSize(Type type) instead.");
 			case CHAR:
-				throw new ParseException("Type not supported: " + type.toString() + ". Use getSize(Type type) instead.");
+				throw new TypeException("Type not supported: " + type.toString() + ". Use getSize(Type type) instead.");
 			case VOID:
-				throw new ParseException("Cannot add 'void' as a variable");
+				throw new TypeException("Cannot add 'void' as a variable");
 			case ENUM:
-				throw new ParseException("Type not supported: " + type.toString() + ". Use getSize(Type type, int length) instead.");
+				throw new TypeException("Type not supported: " + type.toString() + ". Use getSize(Type type, int length) instead.");
 			case ARRAY:
 				return getArray(length, elemType);
 			default:
-				throw new ParseException("Type not defined: " + type.toString());
+				throw new TypeException("Type not defined: " + type.toString());
 		}
 	}
 

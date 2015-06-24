@@ -1,29 +1,14 @@
 package grammar;
 
+import grammar.Functions.Function;
+import grammar.GrammarParser.*;
+import grammar.exception.ParseException;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import grammar.Functions.Function;
-import grammar.GrammarParser.AssStatContext;
-import grammar.GrammarParser.BlockStatContext;
-import grammar.GrammarParser.DeclStatContext;
-import grammar.GrammarParser.EnumStatContext;
-import grammar.GrammarParser.ExprStatContext;
-import grammar.GrammarParser.FuncStatContext;
-import grammar.GrammarParser.IfStatContext;
-import grammar.GrammarParser.LockStatContext;
-import grammar.GrammarParser.LockedExprContext;
-import grammar.GrammarParser.ProgramContext;
-import grammar.GrammarParser.ReturnStatContext;
-import grammar.GrammarParser.RunStatContext;
-import grammar.GrammarParser.StatContext;
-import grammar.GrammarParser.TypeContext;
-import grammar.GrammarParser.UnlockStatContext;
-import grammar.GrammarParser.WhileStatContext;
-
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeProperty;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 
 public class PP07Checker extends GrammarBaseListener {
@@ -47,97 +32,98 @@ public class PP07Checker extends GrammarBaseListener {
 	 * List of functions collected in the latest call of {@link #check}.
 	 */
 	private Functions functions;
+
+	/**
+	 * List of locks collected in the latest call of {@link #check}.
+	 */
 	private Locks locks;
-	private ParseTreeProperty<Type> nodeType = new ParseTreeProperty<Type>();
 
 
-	public ParseTree check(ParseTree tree) {
+	public Result check(ParseTree tree) throws ParseException {
 		PP07PrepWalker walker = new PP07PrepWalker();
 		this.result = new Result();
 		this.symbolTable = new SymbolTable();
 		this.errors = new ArrayList<>();
 		this.functions = walker.getFunctions();
-		this.locks = walker.getLocks()
+		this.locks = walker.getLocks();
 		new ParseTreeWalker().walk(this, tree);
-		if (errors.isEmpty()) {
-			return tree;
-		} else {
-			return null;
+		if (hasErrors()) {
+			throw new ParseException(getErrors());
 		}
+		return this.result;
 	}
-	
+
 	@Override
 	public void enterProgram(ProgramContext ctx) {
 		if (ctx.stat().size() < 1) {
 			addError("Empty program");
 		}
 	}
-	
+
 	@Override
 	public void exitDeclStat(DeclStatContext ctx) {
-		boolean error = false;
 		if (ctx.GLOBAL() == null) {
-			if (!symbolTable.add(ctx.ID().getText(), nodeType.get(ctx.type())))
+			if (!symbolTable.add(ctx.ID().getText(), getType(ctx.type())))
 				addError("Variable name already declared in local scope");
 		} else {
-			if (!symbolTable.addGlobal(ctx.ID().getText(), nodeType.get(ctx.type())))
-				addError("Variable name already declared in global scope");;
+			if (!symbolTable.addGlobal(ctx.ID().getText(), getType(ctx.type())))
+				addError("Variable name already declared in global scope");
 		}
 		if (ctx.expr() != null) {
-			if (nodeType.get(ctx.type()) != nodeType.get(ctx.expr()))
+			if (getType(ctx.type()) != getType(ctx.expr()))
 				addError("Assigned type does not equal declared type");
-		}	
+		}
 	}
-	
+
 	@Override
 	public void exitAssStat(AssStatContext ctx) {
 		if (symbolTable.type(ctx.ID().getText()) == null)
 			addError("\"" + ctx.ID().getText() + "\" was not declared in any scope");
-		if (symbolTable.type(ctx.ID().getText()) != nodeType.get(ctx.expr())) {
-			addError("Assignment is of wrong type. Expected: " + 
+		if (symbolTable.type(ctx.ID().getText()) != getType(ctx.expr())) {
+			addError("Assignment is of wrong type. Expected: " +
 					symbolTable.type(ctx.ID().getText()) +
-					" Actual: " + nodeType.get(ctx.expr()));
+					" Actual: " + getType(ctx.expr()));
 		}
 	}
-	
+
 	@Override
 	public void exitEnumStat(EnumStatContext ctx) {
 		if (!symbolTable.addGlobal(ctx.ID().getText(), Type.ENUM))
 			addError("Variable name already declared in global scope");
 	}
-	
-	
+
+
 	@Override
 	public void exitIfStat(IfStatContext ctx) {
-		if (nodeType.get(ctx.expr()) != Type.BOOL) {
+		if (getType(ctx.expr()) != Type.BOOL) {
 			addError("If statement requires a boolean expression");
 		}
 	}
-	
+
 	@Override
 	public void exitWhileStat(WhileStatContext ctx) {
-		if (nodeType.get(ctx.expr()) != Type.BOOL) {
+		if (getType(ctx.expr()) != Type.BOOL) {
 			addError("While statement requires a boolean expression");
 		}
 	}
-	
+
 	@Override
 	public void exitBlockStat(BlockStatContext ctx) {
 		// fall-through of enterBlock()
 		setType(ctx, getType(ctx.block()));
 	}
-	
+
 	@Override
 	public void exitFuncStat(FuncStatContext ctx) {
 		// already done in FunctionWalker
-		
+
 	}
-	
+
 	@Override
 	public void exitExprStat(ExprStatContext ctx) {
 		// left blank
 	}
-	
+
 	@Override
 	public void exitRunStat(RunStatContext ctx) {
 		String name = ctx.ID(0).getText();
@@ -147,9 +133,9 @@ public class PP07Checker extends GrammarBaseListener {
 					.getArgumentCount()) {
 				for (int i = 0; i < ctx.expr().size(); i++) {
 					if (!getType(ctx.expr(i)).equals(function.getArgument(i))) {
-						addError("Argument " + i + " of run call " + name 
+						addError("Argument " + i + " of run call " + name
 								+ " did not match expected type. "
-								+ "Expected: " + function.getArgument(i) 
+								+ "Expected: " + function.getArgument(i)
 								+ " Actual: " + getType(ctx.expr(i)));
 					}
 				}
@@ -162,21 +148,21 @@ public class PP07Checker extends GrammarBaseListener {
 			addError("Function " + ctx.ID(0).getText() + " not declared in program");
 		}
 	}
-	
+
 	@Override
 	public void exitLockStat(LockStatContext ctx) {
 		// left blank
 	}
-	
+
 	@Override
 	public void exitUnlockStat(UnlockStatContext ctx) {
 		if (!locks.releaseLock(ctx.ID().getText()))
 			addError("Lock " + ctx.ID().getText() + "never declared in program");
 	}
-	
+
 	@Override
 	public void exitReturnStat(ReturnStatContext ctx) {
-		
+
 		ParseTree stat = ctx;
 		while (!(stat instanceof FuncStatContext)) {
 			if (ctx.getParent().getChild(ctx.getParent().getChildCount() - 1) != ctx) {
@@ -185,11 +171,8 @@ public class PP07Checker extends GrammarBaseListener {
 			stat = stat.getParent();
 		}
 		FuncStatContext function = ((FuncStatContext) stat);
-		if (!checkType(function.type(0), getType(ctx.expr()))) {
-			addError("Return statement must be of type " + getType(function.type(0)) 
-					+ " but was of type " + getType(ctx.expr()));
-		}
-		
+		checkType(function.type(0), getType(ctx.expr()));
+
 	}
 
 	@Override
@@ -199,8 +182,44 @@ public class PP07Checker extends GrammarBaseListener {
 		}
 	}
 
+	/**
+	 * Indicates if any errors were encountered in this tree listener.
+	 */
+	public boolean hasErrors() {
+		return !getErrors().isEmpty();
+	}
+
+	/**
+	 * Returns the list of errors collected in this tree listener.
+	 */
+	public List<String> getErrors() {
+		return this.errors;
+	}
+
+	/**
+	 * Checks the inferred type of a given parse tree,
+	 * and adds an error if it does not correspond to the expected type.
+	 */
+	private void checkType(ParserRuleContext node, Type expected) {
+		Type actual = getType(node);
+		if (actual == null) {
+			throw new IllegalArgumentException("Missing inferred type of "
+					+ node.getText());
+		}
+		if (!actual.equals(expected)) {
+			addError(node.getText() + "Expected type '" + expected + "' but found '" + actual + "'");
+		}
+	}
+
 	private void addError(String string) {
 		errors.add(string);
+	}
+
+	/**
+	 * Convenience method to add an offset to the result.
+	 */
+	private void setOffset(ParseTree node, Integer offset) {
+		this.result.setOffset(node, offset);
 	}
 
 	/**
@@ -215,5 +234,22 @@ public class PP07Checker extends GrammarBaseListener {
 	 */
 	private Type getType(ParseTree node) {
 		return this.result.getType(node);
+	}
+
+	/**
+	 * Convenience method to add a flow graph entry to the result.
+	 */
+	private void setEntry(ParseTree node, ParserRuleContext entry) {
+		if (entry == null) {
+			throw new IllegalArgumentException("Null flow graph entry");
+		}
+		this.result.setEntry(node, entry);
+	}
+
+	/**
+	 * Returns the flow graph entry of a given expression or statement.
+	 */
+	private ParserRuleContext entry(ParseTree node) {
+		return this.result.getEntry(node);
 	}
 }

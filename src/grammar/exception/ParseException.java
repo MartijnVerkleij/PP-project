@@ -1,19 +1,29 @@
 package grammar.exception;
 
+import java.util.List;
+
+/**
+ * Exception class wrapping a list of error messages.
+ */
 public class ParseException extends Exception {
+	private final List<String> messages;
+
+	public ParseException(List<String> messages) {
+		super(messages.toString());
+		this.messages = messages;
+	}
 
 	/**
-	 * 
+	 * Returns the error messages wrapped in this exception.
 	 */
-	private static final long serialVersionUID = -8720003723752395545L;
-
-	private String message;
-	
-	public ParseException(String detail) {
-		this.message = detail;
+	public List<String> getMessages() {
+		return this.messages;
 	}
-	
-	public String getMessage() {
-		return message;
+
+	/**
+	 * Prints all error messages to stdout, line by line.
+	 */
+	public void print() {
+		getMessages().forEach(System.out::println);
 	}
 }
