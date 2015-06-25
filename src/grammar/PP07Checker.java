@@ -54,6 +54,17 @@ public class PP07Checker extends GrammarBaseListener {
 	}
 
 	@Override
+	public void exitProgram(ProgramContext ctx) {
+		if (ctx.stat().size() < 1) {
+			addError("Empty program");
+		} else if (!functions.hasFunction("main")) {
+			addError("Program contains no main method");
+		} else {
+			setEntry(ctx, ctx.stat(0));
+		}
+	}
+
+	@Override
 	public void exitDeclStat(DeclStatContext ctx) {
 		if (ctx.GLOBAL() == null) {
 			if (!symbolTable.add(ctx.ID().getText(), getType(ctx.type())))
@@ -65,6 +76,7 @@ public class PP07Checker extends GrammarBaseListener {
 		if (ctx.expr() != null) {
 			if (getType(ctx.type()) != getType(ctx.expr()))
 				addError("Assigned type does not equal declared type");
+			setEntry(ctx, ctx.expr());
 		}
 	}
 
@@ -77,6 +89,7 @@ public class PP07Checker extends GrammarBaseListener {
 					symbolTable.type(ctx.ID().getText()) +
 					" Actual: " + getType(ctx.expr()));
 		}
+		setEntry(ctx, ctx.expr());
 	}
 
 	@Override
@@ -89,28 +102,31 @@ public class PP07Checker extends GrammarBaseListener {
 	@Override
 	public void exitIfStat(IfStatContext ctx) {
 		checkType(ctx.expr(), Type.BOOL);
+		setEntry(ctx, ctx.expr());
 	}
 
 	@Override
 	public void exitWhileStat(WhileStatContext ctx) {
 		checkType(ctx.expr(), Type.BOOL);
+		setEntry(ctx, ctx.expr());
 	}
 
 	@Override
 	public void exitBlockStat(BlockStatContext ctx) {
 		// fall-through of enterBlock()
 		setType(ctx, getType(ctx.block()));
+		setEntry(ctx, ctx.block());
 	}
 
 	@Override
 	public void exitFuncStat(FuncStatContext ctx) {
 		// already done in FunctionWalker
-
+		setEntry(ctx, ctx.block());
 	}
 
 	@Override
 	public void exitExprStat(ExprStatContext ctx) {
-		// left blank
+		setEntry(ctx, ctx.expr());
 	}
 
 	@Override
@@ -205,18 +221,6 @@ public class PP07Checker extends GrammarBaseListener {
 			}
 		} else {
 			addError("Function " + ctx.ID().getText() + " not defined");
-		}
-	}
-	
-	@Override
-	public void exitProgram(ProgramContext ctx) {
-		if (ctx.stat().size() < 1) {
-			addError("Empty program");
-		} else {
-			setEntry(ctx, ctx.stat(0));
-		}
-		if (!functions.hasFunction("main")) {
-			addError("Program contains no main method");
 		}
 	}
 
