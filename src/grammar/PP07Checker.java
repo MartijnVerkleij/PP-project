@@ -49,7 +49,6 @@ public class PP07Checker extends GrammarBaseListener {
 		PP07PrepWalker walker = new PP07PrepWalker();
 		this.result = new Result();
 		this.symbolTable = new SymbolTable();
-		this.errors = new ArrayList<>();
 		this.functions = walker.getFunctions();
 		this.locks = walker.getLocks();
 		this.runs = walker.getRuns();
