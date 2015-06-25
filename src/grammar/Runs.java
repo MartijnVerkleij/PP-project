@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Runs {
 
-	List<String> runs = new ArrayList<String>();
+	private List<String> runs = new ArrayList<String>();
 	
 	public boolean addRun(String id) {
 		if (runs.contains(id)) {
