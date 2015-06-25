@@ -255,6 +255,7 @@ public class PP07Checker extends GrammarBaseListener {
 			addError("Operation \"" + ctx.plusOp().getText() + "\" is not defined for operands " 
 					+ getType(ctx.expr(0)).toString() + " and " + getType(ctx.expr(1)).toString());
 		}
+		setEntry(ctx, ctx.expr(0));
 	}
 	
 	@Override
@@ -275,6 +276,7 @@ public class PP07Checker extends GrammarBaseListener {
 			addError("Operation \"" + ctx.expOp().getText() + "\" is not defined for operands " 
 					+ getType(ctx.expr(0)).toString() + " and " + getType(ctx.expr(1)).toString());
 		}
+		setEntry(ctx, ctx.expr(0));
 	}
 	
 	@Override
@@ -285,6 +287,7 @@ public class PP07Checker extends GrammarBaseListener {
 			addError("Operation \"" + ctx.boolOp().getText() + "\" is not defined for operands " 
 					+ getType(ctx.expr(0)).toString() + " and " + getType(ctx.expr(1)).toString());
 		}
+		setEntry(ctx, ctx.expr(0));
 	}
 	
 	@Override
@@ -298,6 +301,7 @@ public class PP07Checker extends GrammarBaseListener {
 			addError("Operation \"" + ctx.cmpOp().getText() + "\" is not defined for operands " 
 					+ getType(ctx.expr(0)).toString() + " and " + getType(ctx.expr(1)).toString());
 		}
+		setEntry(ctx, ctx.expr(0));
 	}
 	
 	@Override
@@ -307,36 +311,43 @@ public class PP07Checker extends GrammarBaseListener {
 		} else if (ctx.prfOp().MINUS() != null && checkType(ctx, Type.INT)) {
 			setType(ctx, Type.INT);
 		}
+		setEntry(ctx, ctx.expr());
 	}
 	
 	@Override
 	public void exitParExpr(ParExprContext ctx) {
 		setType(ctx, getType(ctx.expr()));
+		setEntry(ctx, ctx.expr());
 	}
 	
 	@Override
 	public void exitIdExpr(IdExprContext ctx) {
 		setType(ctx, getType(ctx.ID()));
+		setEntry(ctx, ctx);
 	}
 	
 	@Override
 	public void exitNumExpr(NumExprContext ctx) {
 		setType(ctx, Type.INT);
+		setEntry(ctx, ctx);
 	}
 	
 	@Override
 	public void exitEidExpr(EidExprContext ctx) {
 		setType(ctx, Type.INT);
+		setEntry(ctx, ctx);
 	}
 	
 	@Override
 	public void exitTrueExpr(TrueExprContext ctx) {
 		setType(ctx, Type.BOOL);
+		setEntry(ctx, ctx);
 	}
 	
 	@Override
 	public void exitFalseExpr(FalseExprContext ctx) {
 		setType(ctx, Type.BOOL);
+		setEntry(ctx, ctx);
 	}
 
 	/**
