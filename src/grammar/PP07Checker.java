@@ -3,7 +3,6 @@ package grammar;
 import grammar.Functions.Function;
 import grammar.GrammarParser.*;
 import grammar.exception.ParseException;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -37,7 +36,7 @@ public class PP07Checker extends GrammarBaseListener {
 	 * List of locks collected in the latest call of {@link #check}.
 	 */
 	private Locks locks;
-	
+
 	/**
 	 * List of run declarations collected in the latest call of {@link #check}.
 	 */
@@ -60,6 +59,17 @@ public class PP07Checker extends GrammarBaseListener {
 	}
 
 	@Override
+	public void exitProgram(ProgramContext ctx) {
+		if (ctx.stat().size() < 1) {
+			addError("Empty program");
+		} else if (!functions.hasFunction("main")) {
+			addError("Program contains no main method");
+		} else {
+			setEntry(ctx, ctx.stat(0));
+		}
+	}
+
+	@Override
 	public void exitDeclStat(DeclStatContext ctx) {
 		if (ctx.GLOBAL() == null) {
 			if (!symbolTable.add(ctx.ID().getText(), getType(ctx.type())))
@@ -71,6 +81,7 @@ public class PP07Checker extends GrammarBaseListener {
 		if (ctx.expr() != null) {
 			if (getType(ctx.type()) != getType(ctx.expr()))
 				addError("Assigned type does not equal declared type");
+			setEntry(ctx, ctx.expr());
 		}
 	}
 
@@ -83,6 +94,7 @@ public class PP07Checker extends GrammarBaseListener {
 					symbolTable.type(ctx.ID().getText()) +
 					" Actual: " + getType(ctx.expr()));
 		}
+		setEntry(ctx, ctx.expr());
 	}
 
 	@Override
@@ -95,28 +107,31 @@ public class PP07Checker extends GrammarBaseListener {
 	@Override
 	public void exitIfStat(IfStatContext ctx) {
 		checkType(ctx.expr(), Type.BOOL);
+		setEntry(ctx, ctx.expr());
 	}
 
 	@Override
 	public void exitWhileStat(WhileStatContext ctx) {
 		checkType(ctx.expr(), Type.BOOL);
+		setEntry(ctx, ctx.expr());
 	}
 
 	@Override
 	public void exitBlockStat(BlockStatContext ctx) {
 		// fall-through of enterBlock()
 		setType(ctx, getType(ctx.block()));
+		setEntry(ctx, ctx.block());
 	}
 
 	@Override
 	public void exitFuncStat(FuncStatContext ctx) {
 		// already done in FunctionWalker
-
+		setEntry(ctx, ctx.block());
 	}
 
 	@Override
 	public void exitExprStat(ExprStatContext ctx) {
-		// left blank
+		setEntry(ctx, ctx.expr());
 	}
 
 	@Override
@@ -142,6 +157,7 @@ public class PP07Checker extends GrammarBaseListener {
 		} else {
 			addError("Function " + ctx.ID(0).getText() + " not declared in program");
 		}
+		setEntry(ctx, function.getContext());
 	}
 
 	@Override
@@ -157,7 +173,6 @@ public class PP07Checker extends GrammarBaseListener {
 
 	@Override
 	public void exitReturnStat(ReturnStatContext ctx) {
-
 		ParseTree stat = ctx;
 		while (!(stat instanceof FuncStatContext)) {
 			if (ctx.getParent().getChild(ctx.getParent().getChildCount() - 1) != ctx) {
@@ -167,11 +182,14 @@ public class PP07Checker extends GrammarBaseListener {
 		}
 		FuncStatContext function = ((FuncStatContext) stat);
 		checkType(function.type(0), getType(ctx.expr()));
+		setEntry(ctx, ctx.expr());
 	}
 
 	@Override
 	public void exitBlock(BlockContext ctx) {
-
+		if (!ctx.stat().isEmpty()) {
+			setEntry(ctx, ctx.stat(0));
+		}
 	}
 
 	@Override
@@ -212,8 +230,9 @@ public class PP07Checker extends GrammarBaseListener {
 		} else {
 			addError("Function " + ctx.ID().getText() + " not defined");
 		}
+		setEntry(ctx, function.getContext());
 	}
-	
+
 	@Override
 	public void exitJoinExpr(JoinExprContext ctx) {
 		if (!runs.hasRun(ctx.ID().getText())) {
@@ -318,18 +337,6 @@ public class PP07Checker extends GrammarBaseListener {
 	@Override
 	public void exitFalseExpr(FalseExprContext ctx) {
 		setType(ctx, Type.BOOL);
-	}
-	
-	@Override
-	public void exitProgram(ProgramContext ctx) {
-		if (ctx.stat().size() < 1) {
-			addError("Empty program");
-		} else {
-			setEntry(ctx, ctx.stat(0));
-		}
-		if (!functions.hasFunction("main")) {
-			addError("Program contains no main method");
-		}
 	}
 
 	/**
