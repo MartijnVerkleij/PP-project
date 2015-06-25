@@ -3,6 +3,7 @@ package grammar;
 import grammar.Functions.Function;
 import grammar.GrammarParser.*;
 import grammar.exception.ParseException;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -37,6 +38,11 @@ public class PP07Checker extends GrammarBaseListener {
 	 * List of locks collected in the latest call of {@link #check}.
 	 */
 	private Locks locks;
+	
+	/**
+	 * List of run declarations collected in the latest call of {@link #check}.
+	 */
+	private Runs runs;
 
 
 	public Result check(ParseTree tree) throws ParseException {
@@ -46,6 +52,8 @@ public class PP07Checker extends GrammarBaseListener {
 		this.errors = new ArrayList<>();
 		this.functions = walker.getFunctions();
 		this.locks = walker.getLocks();
+		this.runs = walker.getRuns();
+		this.errors = walker.getErrors();
 		new ParseTreeWalker().walk(this, tree);
 		if (hasErrors()) {
 			throw new ParseException(getErrors());
@@ -206,6 +214,11 @@ public class PP07Checker extends GrammarBaseListener {
 		} else {
 			addError("Function " + ctx.ID().getText() + " not defined");
 		}
+	}
+	
+	@Override
+	public void exitJoinExpr(JoinExprContext ctx) {
+		
 	}
 	
 	@Override
