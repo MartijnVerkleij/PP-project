@@ -78,10 +78,10 @@ public class PP07Checker extends GrammarBaseListener {
 	public void exitDeclStat(DeclStatContext ctx) {
 		if (ctx.GLOBAL() == null) {
 			if (!symbolTable.add(ctx.ID().getText(), getType(ctx.type())))
-				addError("Variable name already declared in local scope");
+				addError("Variable name " + ctx.ID().getText() + " already declared in local scope");
 		} else {
 			if (!symbolTable.addGlobal(ctx.ID().getText(), getType(ctx.type())))
-				addError("Variable name already declared in global scope");
+				addError("Variable name " + ctx.ID().getText() + " already declared in global scope");
 		}
 		if (ctx.expr() != null) {
 			if (getType(ctx.type()) != getType(ctx.expr()))
@@ -122,7 +122,7 @@ public class PP07Checker extends GrammarBaseListener {
 
 	@Override
 	public void enterBlockStat(@NotNull BlockStatContext ctx) {
-		symbolTable.closeScope();
+		symbolTable.openScope();
 	}
 
 	@Override
