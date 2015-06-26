@@ -119,16 +119,10 @@ public class PP07Checker extends GrammarBaseListener {
 	}
 
 	@Override
-	public void enterBlockStat(@NotNull BlockStatContext ctx) {
-		symbolTable.openScope();
-	}
-
-	@Override
 	public void exitBlockStat(BlockStatContext ctx) {
 		// fall-through of enterBlock()
-		symbolTable.closeScope();
 		setType(ctx, getType(ctx.block()));
-		setEntry(ctx, ctx.block());
+		setEntry(ctx, entry(ctx.block()));
 	}
 
 	@Override
@@ -140,7 +134,7 @@ public class PP07Checker extends GrammarBaseListener {
 
 	@Override
 	public void exitExprStat(ExprStatContext ctx) {
-		setEntry(ctx, ctx.expr());
+		setEntry(ctx, entry(ctx.expr()));
 	}
 
 	@Override
@@ -196,10 +190,16 @@ public class PP07Checker extends GrammarBaseListener {
 	}
 
 	@Override
+	public void enterBlock(@NotNull BlockContext ctx) {
+		symbolTable.openScope();
+	}
+
+	@Override
 	public void exitBlock(BlockContext ctx) {
 		if (!ctx.stat().isEmpty()) {
-			setEntry(ctx, ctx.stat(0));
+			setEntry(ctx, entry(ctx.stat(0)));
 		}
+		symbolTable.closeScope();
 	}
 
 	@Override
