@@ -45,6 +45,7 @@ public class PP07Checker extends GrammarBaseListener {
 
 	public Result check(ParseTree tree) throws ParseException {
 		PP07PrepWalker walker = new PP07PrepWalker();
+		walker.walk(tree);
 		this.result = new Result();
 		this.symbolTable = new SymbolTable();
 		this.functions = walker.getFunctions();
@@ -53,6 +54,9 @@ public class PP07Checker extends GrammarBaseListener {
 		this.errors = walker.getErrors();
 		new ParseTreeWalker().walk(this, tree);
 		if (hasErrors()) {
+			for (String string : errors) {
+				System.err.println(string);
+			}
 			throw new ParseException(getErrors());
 		}
 		return this.result;
@@ -127,6 +131,7 @@ public class PP07Checker extends GrammarBaseListener {
 	public void exitFuncStat(FuncStatContext ctx) {
 		// already done in FunctionWalker
 		setEntry(ctx, ctx.block());
+		functions.getFunction(ctx.ID(0).getText()).setContext(ctx);
 	}
 
 	@Override
@@ -136,7 +141,7 @@ public class PP07Checker extends GrammarBaseListener {
 
 	@Override
 	public void exitRunStat(RunStatContext ctx) {
-		String name = ctx.ID(0).getText();
+		String name = ctx.ID(1).getText();
 		Function function = functions.getFunction(name);
 		if (functions.hasFunction(name)) {
 			if (ctx.expr().size() == function
@@ -154,10 +159,11 @@ public class PP07Checker extends GrammarBaseListener {
 						+ "Expected: " + function.getArgumentCount()
 						+ " Actual: " + ctx.expr().size());
 			}
+			setEntry(ctx, function.getContext());
 		} else {
 			addError("Function " + ctx.ID(0).getText() + " not declared in program");
 		}
-		setEntry(ctx, function.getContext());
+
 	}
 
 	@Override
@@ -175,7 +181,7 @@ public class PP07Checker extends GrammarBaseListener {
 	public void exitReturnStat(ReturnStatContext ctx) {
 		ParseTree stat = ctx;
 		while (!(stat instanceof FuncStatContext)) {
-			if (ctx.getParent().getChild(ctx.getParent().getChildCount() - 1) != ctx) {
+			if (ctx.getParent().getChild(ctx.getParent().getChildCount() - 2) != ctx) {
 				addError("Return statement is not last statement.");
 			}
 			stat = stat.getParent();
@@ -227,10 +233,11 @@ public class PP07Checker extends GrammarBaseListener {
 						+ "Expected: " + function.getArgumentCount()
 						+ " Actual: " + ctx.expr().size());
 			}
+
+			setEntry(ctx, function.getContext());
 		} else {
 			addError("Function " + ctx.ID().getText() + " not defined");
 		}
-		setEntry(ctx, function.getContext());
 	}
 
 	@Override
@@ -244,30 +251,28 @@ public class PP07Checker extends GrammarBaseListener {
 	public void exitLockedExpr(LockedExprContext ctx) {
 		if (!runs.hasRun(ctx.ID().getText())) {
 			addError("Run statement with ID " + ctx.ID().getText()+ " not declared");
-		} else {
-			setType(ctx, Type.BOOL);
 		}
+
+		setType(ctx, Type.BOOL);
 	}
 	
 	@Override
 	public void exitPlusExpr(PlusExprContext ctx) {
-		if (checkType(ctx.expr(0), Type.INT) && checkType(ctx.expr(1), Type.INT)) {
-			setType(ctx, Type.INT);
-		} else {
+		if (!checkType(ctx.expr(0), Type.INT) && checkType(ctx.expr(1), Type.INT)) {
 			addError("Operation \"" + ctx.plusOp().getText() + "\" is not defined for operands " 
 					+ getType(ctx.expr(0)).toString() + " and " + getType(ctx.expr(1)).toString());
 		}
+		setType(ctx, Type.INT);
 		setEntry(ctx, ctx.expr(0));
 	}
 	
 	@Override
 	public void exitMultExpr(MultExprContext ctx) {
 		if (checkType(ctx.expr(0), Type.INT) && checkType(ctx.expr(1), Type.INT)) {
-			setType(ctx, Type.INT);
-		} else {
 			addError("Operation \"" + ctx.multOp().getText() + "\" is not defined for operands " 
 					+ getType(ctx.expr(0)).toString() + " and " + getType(ctx.expr(1)).toString());
 		}
+		setType(ctx, Type.INT);
 	}
 	
 	@Override
@@ -308,9 +313,9 @@ public class PP07Checker extends GrammarBaseListener {
 	
 	@Override
 	public void exitPrfExpr(PrfExprContext ctx) {
-		if (ctx.prfOp().NOT() != null && checkType(ctx, Type.BOOL)) {
+		if (ctx.prfOp().NOT() != null && checkType(ctx.expr(), Type.BOOL)) {
 			setType(ctx, Type.BOOL);
-		} else if (ctx.prfOp().MINUS() != null && checkType(ctx, Type.INT)) {
+		} else if (ctx.prfOp().MINUS() != null && checkType(ctx.expr(), Type.INT)) {
 			setType(ctx, Type.INT);
 		}
 		setEntry(ctx, ctx.expr());
@@ -324,7 +329,7 @@ public class PP07Checker extends GrammarBaseListener {
 	
 	@Override
 	public void exitIdExpr(IdExprContext ctx) {
-		setType(ctx, getType(ctx.ID()));
+		setType(ctx, symbolTable.type(ctx.ID().getText()));
 		setEntry(ctx, ctx);
 	}
 	
@@ -351,7 +356,7 @@ public class PP07Checker extends GrammarBaseListener {
 		setType(ctx, Type.BOOL);
 		setEntry(ctx, ctx);
 	}
-
+	
 	/**
 	 * Indicates if any errors were encountered in this tree listener.
 	 */

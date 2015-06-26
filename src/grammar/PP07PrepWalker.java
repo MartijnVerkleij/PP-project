@@ -41,7 +41,7 @@ public class PP07PrepWalker extends GrammarBaseListener {
 		for (int i = 0; i < ctx.ID().size() - 1; i++) {
 			arguments[i] = getType(ctx.type( i + 1));
 		}
-		if (!functions.addFunction(ctx, ctx.ID(0).getText(), arguments)) {
+		if (!functions.addFunction(ctx.ID(0).getText(), arguments)) {
 			addError("Function name " + ctx.ID(0).getText() + " already declared in program");
 		}
 	}
