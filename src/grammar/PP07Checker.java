@@ -84,7 +84,6 @@ public class PP07Checker extends GrammarBaseListener {
 				addError("Assigned type does not equal declared type");
 			setEntry(ctx, ctx.expr());
 		}
-		symbolTable.
 	}
 
 	@Override
