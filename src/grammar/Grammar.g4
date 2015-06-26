@@ -1,6 +1,6 @@
 grammar Grammar;
 
-@header{package grammar;}
+//@header{package grammar;}
 
 // Program consists of one or more statements
 program	: stat+;

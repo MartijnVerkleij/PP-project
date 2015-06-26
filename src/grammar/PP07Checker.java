@@ -251,6 +251,8 @@ public class PP07Checker extends GrammarBaseListener {
 	public void exitLockedExpr(LockedExprContext ctx) {
 		if (!runs.hasRun(ctx.ID().getText())) {
 			addError("Run statement with ID " + ctx.ID().getText()+ " not declared");
+		} else {
+			setType(ctx, Type.BOOL);
 		}
 	}
 	
