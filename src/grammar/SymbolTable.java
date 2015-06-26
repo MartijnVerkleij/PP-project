@@ -96,7 +96,11 @@ public class SymbolTable {
 	 */
 	public boolean add(String id, Type type) {
 		boolean isGood = false;
-		if (!types.isEmpty() && !types.peek().containsKey(id)) {
+		if (types.isEmpty()) {
+			System.err.println("No scope to assign variable to for variable " + id);
+		}
+		
+		if (!types.peek().containsKey(id)) {
 			types.peek().put(id, type);
 			offsets.peek().put(id, this.size.peek());
 			int tempSize = 0;
