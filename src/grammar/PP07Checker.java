@@ -55,9 +55,7 @@ public class PP07Checker extends GrammarBaseListener {
 		this.errors = walker.getErrors();
 		new ParseTreeWalker().walk(this, tree);
 		if (hasErrors()) {
-			for (String string : errors) {
-				System.err.println(string);
-			}
+			errors.forEach(System.err::println);
 			throw new ParseException(getErrors());
 		}
 		return this.result;
