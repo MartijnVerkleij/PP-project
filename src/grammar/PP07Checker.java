@@ -85,6 +85,8 @@ public class PP07Checker extends GrammarBaseListener {
 			if (getType(ctx.type()) != getType(ctx.expr()))
 				addError("Assigned type does not equal declared type");
 			setEntry(ctx, ctx.expr());
+		} else {
+			setEntry(ctx, ctx);
 		}
 	}
 
@@ -104,6 +106,7 @@ public class PP07Checker extends GrammarBaseListener {
 	public void exitEnumStat(EnumStatContext ctx) {
 		if (!symbolTable.addGlobal(ctx.ID().getText(), Type.ENUM))
 			addError("Variable name already declared in global scope");
+		setEntry(ctx, ctx);
 	}
 
 	@Override
@@ -128,7 +131,7 @@ public class PP07Checker extends GrammarBaseListener {
 	@Override
 	public void exitFuncStat(FuncStatContext ctx) {
 		// already done in FunctionWalker
-		setEntry(ctx, ctx.block());
+		setEntry(ctx, entry(ctx.block()));
 		functions.getFunction(ctx.ID(0).getText()).setContext(ctx);
 	}
 
@@ -157,7 +160,7 @@ public class PP07Checker extends GrammarBaseListener {
 						+ "Expected: " + function.getArgumentCount()
 						+ " Actual: " + ctx.expr().size());
 			}
-			setEntry(ctx, function.getContext());
+			setEntry(ctx, entry(function.getContext()));
 		} else {
 			addError("Function " + ctx.ID(0).getText() + " not declared in program");
 		}
@@ -166,13 +169,14 @@ public class PP07Checker extends GrammarBaseListener {
 
 	@Override
 	public void exitLockStat(LockStatContext ctx) {
-		// left blank
+		setEntry(ctx, ctx);
 	}
 
 	@Override
 	public void exitUnlockStat(UnlockStatContext ctx) {
 		if (!locks.releaseLock(ctx.ID().getText()))
 			addError("Lock " + ctx.ID().getText() + "never declared in program");
+		setEntry(ctx, ctx);
 	}
 
 	@Override
