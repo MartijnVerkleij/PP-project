@@ -38,8 +38,8 @@ program	: stat+;
 stat	: GLOBAL? type ID (ASS expr)? SEMI							#declStat
 		| ID ASS expr SEMI 											#assStat
 		| ENUM ID ASS LBRACE EID (COMMA EID)* RBRACE SEMI			#enumStat
-		| IF LPAR expr RPAR stat (ELSE stat)?						#ifStat
-		| WHILE LPAR expr RPAR stat									#whileStat
+		| IF LPAR expr RPAR block (ELSE block)?						#ifStat
+		| WHILE LPAR expr RPAR block								#whileStat
 		| block														#blockStat
 		| type ID LPAR (type ID (COMMA type ID)*)? RPAR block		#funcStat
 		| expr SEMI													#exprStat

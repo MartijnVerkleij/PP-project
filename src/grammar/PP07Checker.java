@@ -4,6 +4,7 @@ import grammar.Functions.Function;
 import grammar.GrammarParser.*;
 import grammar.exception.ParseException;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
@@ -83,6 +84,7 @@ public class PP07Checker extends GrammarBaseListener {
 				addError("Assigned type does not equal declared type");
 			setEntry(ctx, ctx.expr());
 		}
+		symbolTable.
 	}
 
 	@Override
@@ -103,7 +105,6 @@ public class PP07Checker extends GrammarBaseListener {
 			addError("Variable name already declared in global scope");
 	}
 
-
 	@Override
 	public void exitIfStat(IfStatContext ctx) {
 		checkType(ctx.expr(), Type.BOOL);
@@ -117,8 +118,14 @@ public class PP07Checker extends GrammarBaseListener {
 	}
 
 	@Override
+	public void enterBlockStat(@NotNull BlockStatContext ctx) {
+		symbolTable.closeScope();
+	}
+
+	@Override
 	public void exitBlockStat(BlockStatContext ctx) {
 		// fall-through of enterBlock()
+		symbolTable.closeScope();
 		setType(ctx, getType(ctx.block()));
 		setEntry(ctx, ctx.block());
 	}
