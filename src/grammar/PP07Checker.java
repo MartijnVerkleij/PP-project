@@ -242,7 +242,7 @@ public class PP07Checker extends GrammarBaseListener {
 						+ " Actual: " + ctx.expr().size());
 			}
 
-			setEntry(ctx, function.getContext());
+			setEntry(ctx, entry(function.getContext()));
 		} else {
 			addError("Function " + ctx.ID().getText() + " not defined");
 		}
@@ -253,6 +253,7 @@ public class PP07Checker extends GrammarBaseListener {
 		if (!runs.hasRun(ctx.ID().getText())) {
 			addError("Run statement with ID " + ctx.ID().getText()+ " not declared");
 		}
+		setEntry(ctx, ctx);
 	}
 	
 	@Override
@@ -260,8 +261,8 @@ public class PP07Checker extends GrammarBaseListener {
 		if (!runs.hasRun(ctx.ID().getText())) {
 			addError("Run statement with ID " + ctx.ID().getText()+ " not declared");
 		}
-
 		setType(ctx, Type.BOOL);
+		setEntry(ctx, ctx);
 	}
 	
 	@Override
@@ -271,7 +272,7 @@ public class PP07Checker extends GrammarBaseListener {
 					+ getType(ctx.expr(0)).toString() + " and " + getType(ctx.expr(1)).toString());
 		}
 		setType(ctx, Type.INT);
-		setEntry(ctx, ctx.expr(0));
+		setEntry(ctx, entry(ctx.expr(0)));
 	}
 	
 	@Override
@@ -281,6 +282,7 @@ public class PP07Checker extends GrammarBaseListener {
 					+ getType(ctx.expr(0)).toString() + " and " + getType(ctx.expr(1)).toString());
 		}
 		setType(ctx, Type.INT);
+		setEntry(ctx, entry(ctx.expr(0)));
 	}
 	
 	@Override
@@ -291,7 +293,7 @@ public class PP07Checker extends GrammarBaseListener {
 			addError("Operation \"" + ctx.expOp().getText() + "\" is not defined for operands " 
 					+ getType(ctx.expr(0)).toString() + " and " + getType(ctx.expr(1)).toString());
 		}
-		setEntry(ctx, ctx.expr(0));
+		setEntry(ctx, entry(ctx.expr(0)));
 	}
 	
 	@Override
@@ -302,7 +304,7 @@ public class PP07Checker extends GrammarBaseListener {
 			addError("Operation \"" + ctx.boolOp().getText() + "\" is not defined for operands " 
 					+ getType(ctx.expr(0)).toString() + " and " + getType(ctx.expr(1)).toString());
 		}
-		setEntry(ctx, ctx.expr(0));
+		setEntry(ctx, entry(ctx.expr(0)));
 	}
 	
 	@Override
@@ -316,7 +318,7 @@ public class PP07Checker extends GrammarBaseListener {
 			addError("Operation \"" + ctx.cmpOp().getText() + "\" is not defined for operands " 
 					+ getType(ctx.expr(0)).toString() + " and " + getType(ctx.expr(1)).toString());
 		}
-		setEntry(ctx, ctx.expr(0));
+		setEntry(ctx, entry(ctx.expr(0)));
 	}
 	
 	@Override
@@ -326,13 +328,13 @@ public class PP07Checker extends GrammarBaseListener {
 		} else if (ctx.prfOp().MINUS() != null && checkType(ctx.expr(), Type.INT)) {
 			setType(ctx, Type.INT);
 		}
-		setEntry(ctx, ctx.expr());
+		setEntry(ctx, entry(ctx.expr()));
 	}
 	
 	@Override
 	public void exitParExpr(ParExprContext ctx) {
 		setType(ctx, getType(ctx.expr()));
-		setEntry(ctx, ctx.expr());
+		setEntry(ctx, entry(ctx.expr()));
 	}
 	
 	@Override
