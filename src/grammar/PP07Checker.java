@@ -120,7 +120,7 @@ public class PP07Checker extends GrammarBaseListener {
 
 	@Override
 	public void enterBlockStat(@NotNull BlockStatContext ctx) {
-		symbolTable.closeScope();
+		symbolTable.openScope();
 	}
 
 	@Override
