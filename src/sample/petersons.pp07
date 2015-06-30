@@ -44,9 +44,9 @@ void p1() {
 }
 
 void main() {
-	run a p0();
-	run b p0();
-	run c p1();
-	run d p0();
-	run e p0();
+	run a (p0);
+	run b (p0);
+	run c (p1);
+	run d (p0);
+	run e (p0);
 }
