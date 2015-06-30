@@ -10,5 +10,5 @@ public class Label {
 	
 	public String toIR() {
 		return "#"+ id +"";
-	}
+	} 
 }

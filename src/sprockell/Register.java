@@ -4,7 +4,7 @@ public class Register {
 	
 
 	public enum Indexes {
-		ZERO, PC, SP, SPID, REGA, REGB, REGC, REGD, REGE
+		Zero, PC, SP, SPID, RegA, RegB, RegC, RegD, RegE
 	}
 }
 
