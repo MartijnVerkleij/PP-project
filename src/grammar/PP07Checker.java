@@ -242,7 +242,6 @@ public class PP07Checker extends GrammarBaseListener {
 						+ "Expected: " + function.getArgumentCount()
 						+ " Actual: " + ctx.expr().size());
 			}
-
 			setEntry(ctx, entry(function.getContext()));
 		} else {
 			addError("Function " + ctx.ID().getText() + " not defined");
