@@ -1,4 +1,4 @@
-package grammar;
+package sprockell;
 
 public class Label {
 }

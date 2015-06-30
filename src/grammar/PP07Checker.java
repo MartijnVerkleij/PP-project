@@ -269,7 +269,7 @@ public class PP07Checker extends GrammarBaseListener {
 	
 	@Override
 	public void exitPlusExpr(PlusExprContext ctx) {
-		if (!checkType(ctx.expr(0), Type.INT) && checkType(ctx.expr(1), Type.INT)) {
+		if (!compareType(ctx.expr(0), Type.INT) && compareType(ctx.expr(1), Type.INT)) {
 			addError("Operation \"" + ctx.plusOp().getText() + "\" is not defined for operands " 
 					+ getType(ctx.expr(0)).toString() + " and " + getType(ctx.expr(1)).toString());
 		}
@@ -279,7 +279,7 @@ public class PP07Checker extends GrammarBaseListener {
 	
 	@Override
 	public void exitMultExpr(MultExprContext ctx) {
-		if (checkType(ctx.expr(0), Type.INT) && checkType(ctx.expr(1), Type.INT)) {
+		if (compareType(ctx.expr(0), Type.INT) && compareType(ctx.expr(1), Type.INT)) {
 			addError("Operation \"" + ctx.multOp().getText() + "\" is not defined for operands " 
 					+ getType(ctx.expr(0)).toString() + " and " + getType(ctx.expr(1)).toString());
 		}
@@ -289,7 +289,7 @@ public class PP07Checker extends GrammarBaseListener {
 	
 	@Override
 	public void exitExpExpr(ExpExprContext ctx) {
-		if (checkType(ctx.expr(0), Type.INT) && checkType(ctx.expr(1), Type.INT)) {
+		if (compareType(ctx.expr(0), Type.INT) && compareType(ctx.expr(1), Type.INT)) {
 			setType(ctx, Type.INT);
 		} else {
 			addError("Operation \"" + ctx.expOp().getText() + "\" is not defined for operands " 
@@ -300,7 +300,7 @@ public class PP07Checker extends GrammarBaseListener {
 	
 	@Override
 	public void exitBoolExpr(BoolExprContext ctx) {
-		if (checkType(ctx.expr(0), Type.BOOL) && checkType(ctx.expr(1), Type.BOOL)) {
+		if (compareType(ctx.expr(0), Type.BOOL) && compareType(ctx.expr(1), Type.BOOL)) {
 			setType(ctx, Type.BOOL);
 		} else {
 			addError("Operation \"" + ctx.boolOp().getText() + "\" is not defined for operands " 
@@ -311,10 +311,10 @@ public class PP07Checker extends GrammarBaseListener {
 	
 	@Override
 	public void exitCmpExpr(CmpExprContext ctx) {
-		if (checkType(ctx.expr(0), Type.BOOL) && checkType(ctx.expr(1), Type.BOOL) 
+		if (compareType(ctx.expr(0), Type.BOOL) && compareType(ctx.expr(1), Type.BOOL) 
 				&& (ctx.cmpOp().EQ() != null || ctx.cmpOp().NE() != null )) {
 			setType(ctx, Type.BOOL);
-		} else if (checkType(ctx.expr(0), Type.INT) && checkType(ctx.expr(1), Type.INT)) {
+		} else if (compareType(ctx.expr(0), Type.INT) && compareType(ctx.expr(1), Type.INT)) {
 			setType(ctx, Type.BOOL);
 		} else {
 			addError("Operation \"" + ctx.cmpOp().getText() + "\" is not defined for operands " 
@@ -325,9 +325,9 @@ public class PP07Checker extends GrammarBaseListener {
 	
 	@Override
 	public void exitPrfExpr(PrfExprContext ctx) {
-		if (ctx.prfOp().NOT() != null && checkType(ctx.expr(), Type.BOOL)) {
+		if (ctx.prfOp().NOT() != null && compareType(ctx.expr(), Type.BOOL)) {
 			setType(ctx, Type.BOOL);
-		} else if (ctx.prfOp().MINUS() != null && checkType(ctx.expr(), Type.INT)) {
+		} else if (ctx.prfOp().MINUS() != null && compareType(ctx.expr(), Type.INT)) {
 			setType(ctx, Type.INT);
 		}
 		setEntry(ctx, entry(ctx.expr()));
@@ -393,7 +393,7 @@ public class PP07Checker extends GrammarBaseListener {
 	 * Checks the inferred type of a given parse tree,
 	 * and adds an error if it does not correspond to the expected type.
 	 */
-	private boolean checkType(ParserRuleContext node, Type expected) {
+	private void checkType(ParserRuleContext node, Type expected) {
 		Type actual = getType(node);
 		if (actual == null) {
 			throw new IllegalArgumentException("Missing inferred type of "
@@ -401,10 +401,29 @@ public class PP07Checker extends GrammarBaseListener {
 		}
 		if (!actual.equals(expected)) {
 			addError(node.getText() + "\nExpected type '" + expected + "' but found '" + actual + "'");
+			return;
+		}
+		return;
+	}
+	
+	/**
+	 * Checks the inferred type of a given parse tree,
+	 * and returns whether it is correct. It works just
+	 * like <code>checkType()</code>, except for that 
+	 * it does not throw an error.
+	 */
+	private boolean compareType(ParserRuleContext node, Type expected) {
+		Type actual = getType(node);
+		if (actual == null) {
+			throw new IllegalArgumentException("Missing inferred type of "
+					+ node.getText());
+		}
+		if (!actual.equals(expected)) {
 			return false;
 		}
 		return true;
 	}
+
 
 	private void addError(String string) {
 		errors.add(string);
