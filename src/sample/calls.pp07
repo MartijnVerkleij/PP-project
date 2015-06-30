@@ -1,0 +1,15 @@
+// Calls testing
+
+void test() {
+	test2();
+//	i = i - 5;
+}
+
+void main() {
+	int i = 10;
+	test();
+}
+
+void test2() {
+
+}
