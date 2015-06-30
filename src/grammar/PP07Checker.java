@@ -83,7 +83,8 @@ public class PP07Checker extends GrammarBaseListener {
 		}
 		if (ctx.expr() != null) {
 			if (getType(ctx.type()) != getType(ctx.expr()))
-				addError("Assigned type does not equal declared type");
+				addError("Assigned type " + getType(ctx.expr()).name() 
+						+ " does not equal declared type " + getType(ctx.type()).name());
 			setEntry(ctx, ctx.expr());
 		} else {
 			setEntry(ctx, ctx);
@@ -250,8 +251,10 @@ public class PP07Checker extends GrammarBaseListener {
 
 	@Override
 	public void exitJoinExpr(JoinExprContext ctx) {
+		
 		if (!runs.hasRun(ctx.ID().getText())) {
 			addError("Run statement with ID " + ctx.ID().getText()+ " not declared");
+			runs.
 		}
 		setEntry(ctx, ctx);
 	}

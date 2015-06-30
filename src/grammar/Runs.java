@@ -1,22 +1,31 @@
 package grammar;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Runs {
 
-	private List<String> runs = new ArrayList<String>();
+	private Map<String, Type> runs = new HashMap<String, Type>();
 	
-	public boolean addRun(String id) {
-		if (runs.contains(id)) {
+	public boolean addRun(String id, Type type) {
+		if (runs.containsKey(id)) {
 			return false;
 		} else {
-			runs.add(id);
+			runs.put(id, type);
 			return true;
 		}
 	}
 	
 	public boolean hasRun(String id) {
-		return runs.contains(id);
+		return runs.containsKey(id);
+	}
+	
+	public Type getType(String id) {
+		if (runs.containsKey(id)) {
+			return runs.get(id);
+		}
+		return null;
 	}
 }
