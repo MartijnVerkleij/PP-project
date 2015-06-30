@@ -342,8 +342,14 @@ public class PP07Checker extends GrammarBaseListener {
 	
 	@Override
 	public void exitIdExpr(IdExprContext ctx) {
-		setType(ctx, symbolTable.type(ctx.ID().getText()));
-		setEntry(ctx, ctx);
+		String id = ctx.ID().getText();
+		Type type = symbolTable.type(id);
+		if (type == null) {
+			addError("ID: " + id + " is not defined.");
+		} else {
+			setType(ctx, type);
+			setEntry(ctx, ctx);
+		}
 	}
 	
 	@Override
