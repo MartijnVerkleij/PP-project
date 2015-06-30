@@ -12,19 +12,13 @@ import grammar.GrammarParser.UnlockStatContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
-public class PP07PrepWalker extends GrammarBaseListener {
+public class PP07FunctionWalker extends GrammarBaseListener {
 
 	private Functions functions = new Functions();
 	private Locks locks = new Locks();
-	private Runs runs = new Runs();
 	private List<String> errors = new ArrayList<String>();
 	
 	public void walk(ParseTree tree) {
-		PP07FunctionWalker walker = new PP07FunctionWalker();
-		walker.walk(tree);
-		functions = walker.getFunctions();
-		locks = walker.getLocks();
-				
 		new ParseTreeWalker().walk(this, tree);
 	}
 	
@@ -36,21 +30,21 @@ public class PP07PrepWalker extends GrammarBaseListener {
 		return locks;
 	}
 	
-	public Runs getRuns() {
-		return runs;
-	}
-	
 	@Override
 	public void exitFuncStat(FuncStatContext ctx) {
-		//logic in pp07FunctionWalker
+		Type[] arguments = new Type[ctx.ID().size() - 1];
+		for (int i = 0; i < ctx.ID().size() - 1; i++) {
+			arguments[i] = getType(ctx.type( i + 1));
+		}
+		if (!functions.addFunction(ctx.ID(0).getText(), getType(ctx.type(0)) , arguments)) {
+			addError("Function name " + ctx.ID(0).getText() + " already declared in program");
+		}
 	}
 	
-	
+
 	@Override
-	public void exitRunStat(RunStatContext ctx) {
-		if (!runs.addRun(ctx.ID(0).getText(), functions.getFunction(ctx.ID(1).getText()).getReturntype())) {
-			addError("Run ID " + ctx.ID(0).getText() + " already declared in program");
-		}
+	public void exitLockStat(LockStatContext ctx) {
+		locks.acquireLock(ctx.ID().getText());
 	}
 	
 	public Type getType(TypeContext ctx) {
@@ -60,9 +54,13 @@ public class PP07PrepWalker extends GrammarBaseListener {
 		return null;
 	}
 	
+	
+
+
 	private void addError(String string) {
 		errors.add(string);
 	}
+
 
 	/**
 	 * Indicates if any errors were encountered in this tree listener.
