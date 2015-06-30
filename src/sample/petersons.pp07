@@ -15,7 +15,7 @@ void p0() {
 
 	while (condition) {
 		lock a;
-		condition = flag1 && turn == 1;
+		condition = flag1 && (turn == 1);
 		unlock a;
 	}
 
@@ -34,7 +34,7 @@ void p1() {
 
 	while (condition) {
 		lock a;
-		condition = flag0 && turn == 0;
+		condition = flag0 && (turn == 0);
 		unlock a;
 	}
 
