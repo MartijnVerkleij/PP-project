@@ -1,11 +1,11 @@
 package grammar;
 
 
+import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import sprockell.Label;
 import sprockell.OpCode;
-import sprockell.Register;
+import sprockell.Register.Indexes;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -19,24 +19,22 @@ start address			-- global
 thread lock				-- global
  */
 
-/* STACK ARP
-
- */
-
-public class PP07Generator extends GrammarBaseVisitor {
+public class PP07Generator extends GrammarBaseVisitor<Integer> {
+	private final Integer DEFAULT_VALUE = 0;
+	private final Integer STD_IO = 0x1000000;
+	private final Integer SHARED_IN = 0xFFFFFF;
+	private final Integer SHARED_OUT = 0;
 	private BufferedWriter writer;
 	private BufferedReader reader;
 	private Result checkResult;
-	private ParseTreeProperty<Register> regs;
+	private SymbolTable symbolTable;
 	private ArrayList<Label> labels;
-	private int regCount;
 	private int lineNum;
 
 	public File generate(ParseTree tree, Result checkResult) {
 		this.checkResult = checkResult;
-		this.regs = new ParseTreeProperty<>();
+		this.symbolTable = new SymbolTable();
 		this.labels = new ArrayList<>();
-		this.regCount = 0;
 		this.lineNum = 0;
 		File file = new File("program.hs");
 		try {
@@ -67,6 +65,30 @@ public class PP07Generator extends GrammarBaseVisitor {
 
 	}
 
+	@Override
+	public Integer visitProgram(@NotNull GrammarParser.ProgramContext ctx) {
+		ctx.stat().forEach(this::visit);
+		return null;
+	}
+
+	@Override
+	public Integer visitDeclStat(@NotNull GrammarParser.DeclStatContext ctx) {
+		String value = DEFAULT_VALUE.toString();
+		if (ctx.ASS() != null) {
+			value = visit(ctx.expr()).toString();
+		}
+		try {
+			emit(OpCode.Const, value, Indexes.RegA.toString());
+			if (ctx.GLOBAL() == null) {
+				emit(OpCode.Store, Indexes.RegA.toString(), symbolTable.offset(ctx.ID().getText()).toString());
+			} else {
+
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 	private void emit(OpCode opCode, String... strings) throws IOException {
 		emit(null, opCode, strings);
