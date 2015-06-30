@@ -2,13 +2,13 @@ package sprockell;
 
 public class Label {
 	
-	int id;
+	int lineNumber;
 	
-	public Label(int id) {
-		this.id = id;
+	public Label(int line) {
+		this.lineNumber = line;
 	}
 	
 	public String toIR() {
-		return "#"+ id +"";
+		return "#"+ lineNumber +"";
 	} 
 }
