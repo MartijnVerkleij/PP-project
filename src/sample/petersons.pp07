@@ -44,8 +44,9 @@ void p1() {
 }
 
 void main() {
-	while (i > 0) {
-		run i (p0);
-		run id (p1);
-	}
+	run a p0();
+	run b p0();
+	run c p1();
+	run d p0();
+	run e p0();
 }
