@@ -1,17 +1,31 @@
 package grammar;
 
 
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeProperty;
+import sprockell.Label;
+import sprockell.Op;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 
-import sprockell.Label;
-import sprockell.Op;
-
-public class PP07Generator {
+public class PP07Generator extends GrammarBaseVisitor {
 	private BufferedWriter writer;
 	private BufferedReader reader;
 	private File file;
+	private Result checkResult;
+	private ParseTreeProperty<Reg> regs;
+	private ParseTreeProperty<Label> labels;
+	private int regCount;
+
+	public File generate(ParseTree tree, Result checkResult) {
+		this.checkResult = checkResult;
+		this.regs = new ParseTreeProperty<>();
+		this.labels = new ParseTreeProperty<>();
+		this.regCount = 0;
+		return file;
+	}
 
 
 	private void emit(Op op, String... strings) {
