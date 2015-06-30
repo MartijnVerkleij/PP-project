@@ -4,12 +4,13 @@ void test() {
 	test2();
 //	i = i - 5;
 }
+void test2() {
+
+}
 
 void main() {
 	int i = 10;
 	test();
 }
 
-void test2() {
-
-}
+ 
