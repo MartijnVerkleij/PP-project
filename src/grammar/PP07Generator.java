@@ -7,14 +7,11 @@ import sprockell.Label;
 import sprockell.Op;
 import sprockell.Register;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
+import java.io.*;
 
 public class PP07Generator extends GrammarBaseVisitor {
 	private BufferedWriter writer;
 	private BufferedReader reader;
-	private File file;
 	private Result checkResult;
 	private ParseTreeProperty<Register> regs;
 	private ParseTreeProperty<Label> labels;
@@ -25,20 +22,46 @@ public class PP07Generator extends GrammarBaseVisitor {
 		this.regs = new ParseTreeProperty<>();
 		this.labels = new ParseTreeProperty<>();
 		this.regCount = 0;
+		File file = new File("program.hs");
 		try {
-
+			file.createNewFile();
+			FileWriter fw = new FileWriter(file);
+			writer = new BufferedWriter(fw);
+			generateHeader();
+			tree.accept(this);
+			writer.flush();
+			writer.close();
+			FileReader fr = new FileReader(file);
+			reader = new BufferedReader(fr);
+			generateLabels();
+			reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
-		
+
 		return file;
 	}
 
+	private void generateLabels() {
 
-	private void emit(Op op, String... strings) {
+	}
+
+	private void generateHeader() {
+
+	}
+
+
+	private void emit(Op op, String... strings) throws IOException {
 		emit(null, op, strings);
 	}
 
-	private void emit(Label label, Op op, String[] strings) {
-
+	private void emit(Label label, Op op, String[] strings) throws IOException {
+		String operands = "";
+		for (String string : strings) {
+			operands += string + " ";
+		}
+		writer.write(label.toIR() + " " + op.toString() + " " + operands);
+		writer.newLine();
 	}
 }
