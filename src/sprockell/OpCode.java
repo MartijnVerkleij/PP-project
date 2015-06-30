@@ -1,5 +1,5 @@
 package sprockell;
 
-public enum Op {
+public enum OpCode {
 	Const;
 }

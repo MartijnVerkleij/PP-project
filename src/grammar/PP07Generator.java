@@ -4,7 +4,7 @@ package grammar;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import sprockell.Label;
-import sprockell.Op;
+import sprockell.OpCode;
 import sprockell.Register;
 
 import java.io.*;
@@ -52,16 +52,16 @@ public class PP07Generator extends GrammarBaseVisitor {
 	}
 
 
-	private void emit(Op op, String... strings) throws IOException {
-		emit(null, op, strings);
+	private void emit(OpCode opCode, String... strings) throws IOException {
+		emit(null, opCode, strings);
 	}
 
-	private void emit(Label label, Op op, String[] strings) throws IOException {
+	private void emit(Label label, OpCode opCode, String[] strings) throws IOException {
 		String operands = "";
 		for (String string : strings) {
 			operands += string + " ";
 		}
-		writer.write(label.toIR() + " " + op.toString() + " " + operands);
+		writer.write(label.toIR() + " " + opCode.toString() + " " + operands);
 		writer.newLine();
 	}
 }
