@@ -251,17 +251,16 @@ public class PP07Checker extends GrammarBaseListener {
 
 	@Override
 	public void exitJoinExpr(JoinExprContext ctx) {
-		
 		if (!runs.hasRun(ctx.ID().getText())) {
 			addError("Run statement with ID " + ctx.ID().getText()+ " not declared");
-			runs.
 		}
+		setType(ctx, runs.getType(ctx.ID().getText()));
 		setEntry(ctx, ctx);
 	}
 	
 	@Override
 	public void exitLockedExpr(LockedExprContext ctx) {
-		if (!runs.hasRun(ctx.ID().getText())) {
+		if (!locks.releaseLock(ctx.ID().getText())) {
 			addError("Run statement with ID " + ctx.ID().getText()+ " not declared");
 		}
 		setType(ctx, Type.BOOL);
