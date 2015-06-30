@@ -315,7 +315,7 @@ public class PP07Checker extends GrammarBaseListener {
 				&& (ctx.cmpOp().EQ() != null || ctx.cmpOp().NE() != null )) {
 			setType(ctx, Type.BOOL);
 		} else if (checkType(ctx.expr(0), Type.INT) && checkType(ctx.expr(1), Type.INT)) {
-			setType(ctx, Type.INT);
+			setType(ctx, Type.BOOL);
 		} else {
 			addError("Operation \"" + ctx.cmpOp().getText() + "\" is not defined for operands " 
 					+ getType(ctx.expr(0)).toString() + " and " + getType(ctx.expr(1)).toString());
