@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import sprockell.Label;
 import sprockell.Op;
+import sprockell.Register;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -15,7 +16,7 @@ public class PP07Generator extends GrammarBaseVisitor {
 	private BufferedReader reader;
 	private File file;
 	private Result checkResult;
-	private ParseTreeProperty<Reg> regs;
+	private ParseTreeProperty<Register> regs;
 	private ParseTreeProperty<Label> labels;
 	private int regCount;
 
@@ -24,6 +25,11 @@ public class PP07Generator extends GrammarBaseVisitor {
 		this.regs = new ParseTreeProperty<>();
 		this.labels = new ParseTreeProperty<>();
 		this.regCount = 0;
+		try {
+
+		}
+
+		
 		return file;
 	}
 
