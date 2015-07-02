@@ -57,8 +57,7 @@ public class PP07Generator extends GrammarBaseVisitor<Integer> {
 		return file;
 	}
 
-	
-	
+
 	private void generateLabels() {
 
 	}
@@ -75,14 +74,23 @@ public class PP07Generator extends GrammarBaseVisitor<Integer> {
 
 	@Override
 	public Integer visitDeclStat(@NotNull GrammarParser.DeclStatContext ctx) {
+		String id = ctx.ID().getText();
+		Type type = getType(ctx.type());
 		String value = DEFAULT_VALUE.toString();
 		if (ctx.ASS() != null) {
 			value = visit(ctx.expr()).toString();
 		}
+
+		if (ctx.GLOBAL() == null) {
+			symbolTable.add(id, type);
+		} else {
+			symbolTable.addGlobal(id, type);
+		}
+
 		try {
 			emit(OpCode.Const, value, Indexes.RegA.toString());
 			if (ctx.GLOBAL() == null) {
-				emit(OpCode.Store, Indexes.RegA.toString(), symbolTable.offset(ctx.ID().getText()).toString());
+				emit(OpCode.Store, Indexes.RegA.toString(), symbolTable.offset(id).toString());
 			} else {
 
 			}
@@ -106,5 +114,12 @@ public class PP07Generator extends GrammarBaseVisitor<Integer> {
 		}
 		writer.write(opCode.toString() + " " + operands);
 		writer.newLine();
+	}
+
+	/**
+	 * Returns the type of a given expression or type node.
+	 */
+	private Type getType(ParseTree node) {
+		return this.checkResult.getType(node);
 	}
 }

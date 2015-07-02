@@ -25,7 +25,11 @@ public class SymbolTable {
 		types.add(new HashMap<>());
 		offsets.add(new HashMap<>());
 		size.add(0);
-		arps.add()
+		int totalsize = 0;
+		for (Integer i : size) {
+			totalsize += i;
+		}
+		arps.add(totalsize);
 	}
 
 	/**
@@ -37,6 +41,7 @@ public class SymbolTable {
 		types.pop();
 		offsets.pop();
 		size.pop();
+		arps.pop();
 	}
 
 	/**
@@ -105,12 +110,7 @@ public class SymbolTable {
 		if (!types.peek().containsKey(id)) {
 			types.peek().put(id, type);
 			offsets.peek().put(id, this.size.peek());
-			int tempSize = 0;
-			try {
-				tempSize = size.pop() + TypeSize.getSize(type);
-			} catch (TypeException e) {
-				e.printStackTrace();
-			}
+			int tempSize = size.pop() + TypeSize.WORD;
 			size.push(tempSize);
 			isGood = true;
 		}
@@ -185,6 +185,10 @@ public class SymbolTable {
 			offset = globalOffsets.containsKey(id) ? globalOffsets.get(id) : null;
 		}
 		return offset;
+	}
+
+	public Integer arp() {
+		return arps.peek();
 	}
 
 }
