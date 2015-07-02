@@ -118,3 +118,5 @@ src/grammar/GrammarVisitor.java
 src/grammar/GrammarLexer.java
 src/grammar/GrammarLexer.tokens
 src/grammar/GrammarParser.java
+
+Verslag_alpha.*
