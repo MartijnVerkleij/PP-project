@@ -5,6 +5,7 @@
 \usepackage{amssymb}
 \usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
 \usepackage{wrapfig}
+\usepackage{amsthm}
 \usepackage{float} \floatstyle{boxed} \restylefloat{figure}
 \author{Martijn Verkleij (s1466895) and Tim Kerkhoven (s1375253)}
 \title{Report PP07}
@@ -15,12 +16,12 @@
 \tableofcontents
 
 
+\chapter{Features}
+PP07 is a programming language written for execution on the Sprockell simulator. It was written as a Turing-complete language that supports basic operations, if and else and while. It is further projected to support functions, concurrent execution with futures and enumerations. The language uses call-by-value to resolve variables. A more elaborate list of all supported operations can be found in chapter \ref{chp:langdesc}.   
 
-\chapter{Software description}
+\chapter{Language description} \label{chp:langdesc}
 
-\section{Grammar} \label{sec:grammar}
-
-\section{Structure} \label{sec:structure}
+\section{Program Structure} \label{sec:structure}
 In this chapter the structure of the compiled code is discussed. For the structure of the language itself, see section \ref{sec:grammar}. 
 \subsection{Thread branching}
 Before the program can begin, the individial threads must be separated. This is done by the following set of instructions:
@@ -50,8 +51,35 @@ A thread control loop looks as follows:
 	Jump (Rel -7)						// jump to start
 \end{verbatim}
 
+
 \subsection{Functions}
 All functions follow after the thread control loops. These are listed in order, and can be called by any thread, sequentially or in parallel. The two are distinct in that in the sequential case an activation record is added to the local stack, and in the parallel case a free Sprockell is selected to do the task, from which a result can be read with a join statement.
+
+\subsection{Main}
+
+
+Since \texttt{main} is in fact a function itself, it looks very similar, except for the fact that it is the only function called directly, not by any PP07-code. It also differs from the others since it has an EndProg statement at the end.
+
+\section{Statements}
+
+\subsection{Variables}
+
+\subsubsection*{Variable Declaration}
+A variable can be declared with scope-awareness.
+\begin{description}
+	\item[Syntax:] 
+		int \textless variablename \textgreater [= \textless expression \textgreater];
+	\item[Example:] 
+		int i;
+		int i = 5; 
+		int i = 5 * j + 6;
+\end{description} 
+
+
+
+
+\subsection{Functions}
+\subsubsection{Function Definition}
 
 \subsubsection{Parallel function call}
 In a parallel function call the caller must set up some things before the function can be executed. An activation record (Section \ref{fig:actrecord}) must be made. 
@@ -104,8 +132,13 @@ In a parallel function call the caller must set up some things before the functi
 \end{verbatim}
 
 
-\subsection{Main}
-Since \texttt{main} is in fact a function itself, it looks very similar, except for the fact that it is the only function called directly, not by any PP07-code. It also differs from the others since it has an EndProg statement at the end.
+
+\subsubsection{Parallel function call}
+
+
+
+
+
 
 \section{Memory model}
 Sprockell has various levels of memory, namely in the form of registers, local memory and shared memory. These three levels have a specific model which is explained in this chapter.
@@ -119,16 +152,22 @@ Local memory is meant to store thread-specific data in. It will be used to store
 \label{fig:actrecord}
 Activation Record
  
-\begin{tabular}{| l || l |}
+\begin{tabular}{| l | l |}
 \hline
-	ARP & Pointer to the caller's activation record on the stack\\
-	Variables & All variables inherited and all declared variables.\\
-	Variable count & Number of arguments. \\
-	Return value & Space to fill with the return value of this function.\\
-	Return Address & Instruction to jump to after the function finishes.\\
-	Caller's ARP & \\
-	Parameters & All parameters given as arguments to this function\\
-	Parameter count & Number of parameters. \\
+	ARP
+		& Pointer to the caller's activation record on the stack \\	
+
+	Return Address
+		& Instruction to jump to after the function finishes \\
+	
+	Caller's ARP 	
+		& \\
+	
+	Parameters 
+		& All parameters given as arguments to this function. \\
+	
+	Variables 
+		& All variables inherited and all declared variables \\	
 \hline
 \end{tabular}
 
@@ -138,15 +177,22 @@ Global memory has a more elaborate structure, since it stores not only data shar
 \subsubsection{Thread control records}
 Thread control records are used to control the execution of parallel threads on the number of Sprockells that are provided in the thread pool. Each Sprockell with \texttt{SPID > 0} has one of these records. Each record contains the following:
 
-\begin{tabular}{| l || l |}
+\begin{tabular}{| l | l |}
 \hline
-Occupation & Whether the tread is now active. This may only be flipped with a CompareAndSet. \\
-PC-pointer & Used by functions to let this Sprockell execute a task in parallel. \\
-PC-pointer ready & Set when the PC-pointer is ready to read. \\
-Return value & Value written by the function on completion, if it has any. \\
-Return value ready & Set when the thread has finished execution. \\
-Argument count & Number of arguments. \\
-Argument pointer & pointer to argument space in shared memory. \\ 
+Occupation 
+	& Whether the tread is now active. This may only be flipped with a CompareAndSet. \\
+PC-pointer 
+	& Used by functions to let this Sprockell execute a task in parallel. \\
+PC-pointer ready 
+	& Set when the PC-pointer is ready to read. \\
+Return value 
+	& Value written by the function on completion, if it has any. \\
+Return value ready 
+	& Set when the thread has finished execution. \\
+Argument count 
+	& Number of arguments. \\
+Argument pointer 
+	& pointer to argument space in shared memory. \\ 
 \hline
 \end{tabular}
 
@@ -157,6 +203,7 @@ Since argument size can be arbitrarily large in case of arrays (which was not im
 Global variables are declared at the end of memory, to avoid collision with the argument space. Since no types are available in the language that are larger than one word, variables can be placed in one slot each.
 
 
+\chapter{Software description}
 
 
 \end{document}
