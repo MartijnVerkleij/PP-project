@@ -187,8 +187,19 @@ public class SymbolTable {
 		return offset;
 	}
 
-	public Integer arp() {
-		return arps.peek();
+	public Integer arp(String id) {
+		int depth = 0;
+		while (true) {
+			if (types.elementAt(depth).keySet().contains(id)) {
+				break;
+			}
+			depth++;
+		}
+		return arps.elementAt(depth);
+	}
+
+	public boolean isGlobal(String id) {
+		return globalTypes.keySet().contains(id);
 	}
 
 }

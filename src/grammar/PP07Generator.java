@@ -22,8 +22,7 @@ thread lock				-- global
 public class PP07Generator extends GrammarBaseVisitor<Integer> {
 	private final Integer DEFAULT_VALUE = 0;
 	private final Integer STD_IO = 0x1000000;
-	private final Integer SHARED_IN = 0xFFFFFF;
-	private final Integer SHARED_OUT = 0;
+	private final Integer SHARED_MEM = 0;
 	private BufferedWriter writer;
 	private BufferedReader reader;
 	private Result checkResult;
@@ -76,9 +75,9 @@ public class PP07Generator extends GrammarBaseVisitor<Integer> {
 	public Integer visitDeclStat(@NotNull GrammarParser.DeclStatContext ctx) {
 		String id = ctx.ID().getText();
 		Type type = getType(ctx.type());
-		String value = DEFAULT_VALUE.toString();
+		Integer value = DEFAULT_VALUE;
 		if (ctx.ASS() != null) {
-			value = visit(ctx.expr()).toString();
+			value = visit(ctx.expr());
 		}
 
 		if (ctx.GLOBAL() == null) {
@@ -88,16 +87,46 @@ public class PP07Generator extends GrammarBaseVisitor<Integer> {
 		}
 
 		try {
-			emit(OpCode.Const, value, Indexes.RegA.toString());
+			emit(OpCode.Const, value.toString(), Indexes.RegA.toString());
 			if (ctx.GLOBAL() == null) {
-				emit(OpCode.Store, Indexes.RegA.toString(), symbolTable.offset(id).toString());
+				emit(OpCode.Push, Indexes.RegA.toString());
 			} else {
-
+				emit(OpCode.Write, Indexes.RegA.toString(), ((Integer) (SHARED_MEM + symbolTable.offset(id))).toString());
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return value;
+	}
+
+	@Override
+	public Integer visitAssStat(@NotNull GrammarParser.AssStatContext ctx) {
+		String id = ctx.ID().getText();
+		Integer value = visit(ctx.expr());
+
+		try {
+			emit(OpCode.Const, value.toString(), Indexes.RegA.toString());
+			if (symbolTable.isGlobal(id)) {
+				emit(OpCode.Write, Indexes.RegA.toString(), ((Integer) (SHARED_MEM + symbolTable.offset(id))).toString());
+			} else {
+				emit(OpCode.Store, Indexes.RegA.toString(), ((Integer) (symbolTable.arp(id) + symbolTable.offset(id))).toString());
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return value;
+	}
+
+	@Override
+	public Integer visitEnumStat(@NotNull GrammarParser.EnumStatContext ctx) {
+		// TODO
 		return null;
+	}
+
+	@Override
+	public Integer visitIfStat(@NotNull GrammarParser.IfStatContext ctx) {
+		return super.visitIfStat(ctx);
 	}
 
 	private void emit(OpCode opCode, String... strings) throws IOException {
