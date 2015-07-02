@@ -16,6 +16,7 @@ public class SymbolTable {
 	private Stack<Map<String, Integer>> offsets = new Stack<>();
 	private Stack<Integer> size = new Stack<>();
 	private Stack<Map<String, Type>> types = new Stack<>();
+	private Stack<Integer> arps = new Stack<>();
 
 	/**
 	 * Adds a next deeper scope level.
@@ -24,6 +25,7 @@ public class SymbolTable {
 		types.add(new HashMap<>());
 		offsets.add(new HashMap<>());
 		size.add(0);
+		arps.add()
 	}
 
 	/**
