@@ -26,12 +26,11 @@ public class PP07Compiler {
 			try {
 				ParseTree tree = parse(new ANTLRInputStream(new FileReader(new File(BASE_DIR + args[0] + EXT))));
 				Result checked = new PP07Checker().check(tree);
+				File result = new PP07Generator().generate(tree, checked);
 			} catch (ParseException | IOException e) {
 				e.printStackTrace();
 			}
 		}
-		
-		
 	}
 	
 	
