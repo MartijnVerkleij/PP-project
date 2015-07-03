@@ -1,5 +1,5 @@
-global int i = 1;
 global int r;
+global int i = 1;
 {
 	bool b = false;
 	while (b == false) {
