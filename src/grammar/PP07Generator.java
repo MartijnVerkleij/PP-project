@@ -38,13 +38,13 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		File file = new File("program.hs");
 		try {
 			file.createNewFile();
-			FileWriter fw = new FileWriter(file);
-			writer = new BufferedWriter(fw);
+			writer = new BufferedWriter(new FileWriter(file));
 			generateHeader();
 			tree.accept(this);
 			writer.flush();
-			FileReader fr = new FileReader(file);
-			reader = new BufferedReader(fr);
+			writer.close();
+			writer = new BufferedWriter(new FileWriter(file));
+			reader = new BufferedReader(new FileReader(file));
 			generateLabels();
 			reader.close();
 			writer.flush();
@@ -67,6 +67,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 				line = line.replaceAll("#temp#(.*?)#temp#", labels.get(line.substring(first, second)).getLine());
 			}
 			writer.write(line);
+			writer.newLine();
 		}
 	}
 
