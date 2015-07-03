@@ -8,7 +8,8 @@ import sprockell.OpCode;
 import sprockell.Register.Indexes;
 
 import java.io.*;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /* CORE ARP
 return value			-- global
@@ -25,16 +26,14 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 	private final Type type = Type.VOID;
 	private BufferedWriter writer;
 	private BufferedReader reader;
-	private Result checkResult;
 	private SymbolTable symbolTable;
-	private ArrayList<Label> labels;
+	private Map<String, Label> labels;
 	private int lineNum;
 	private int labelID = 0;
 
 	public File generate(ParseTree tree, Result checkResult) {
-		this.checkResult = checkResult;
 		this.symbolTable = new SymbolTable();
-		this.labels = new ArrayList<>();
+		this.labels = new HashMap<>();
 		this.lineNum = 0;
 		File file = new File("program.hs");
 		try {
@@ -44,11 +43,12 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 			generateHeader();
 			tree.accept(this);
 			writer.flush();
-			writer.close();
 			FileReader fr = new FileReader(file);
 			reader = new BufferedReader(fr);
 			generateLabels();
 			reader.close();
+			writer.flush();
+			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -58,8 +58,14 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 	}
 
 
-	private void generateLabels() {
-
+	private void generateLabels() throws IOException {
+		String line;
+		String edited = null;
+		while ((line = reader.readLine()) != null) {
+			edited = line.replaceAll("#temp#(.*?)#temp#", labels.get(line.substring(line.indexOf("#temp#")
+					+ "#temp#".length(), line.lastIndexOf("#temp#"))).getLine());
+			writer.write(edited);
+		}
 	}
 
 	private void generateHeader() {
@@ -118,7 +124,8 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		emit(OpCode.Pop, Indexes.RegA.toString()); // value to compare
 
 		emit(OpCode.Const, "0", Indexes.RegB.toString()); // constant reg with 0
-		emit(OpCode.Compute, "Equal", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString()); // compare
+		emit(OpCode.Compute, "Equal", Indexes.RegA.toString(), Indexes.RegB.toString(),
+				Indexes.RegA.toString()); // compare
 
 		if (ctx.ELSE() != null) {
 			String endLabel = getNewLabelID() + "endif"; // label for jump to end
@@ -152,7 +159,8 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		visit(ctx.expr()); // evaluate expression
 		emit(OpCode.Pop, Indexes.RegA.toString()); // value to compare
 		emit(OpCode.Const, "1", Indexes.RegB.toString()); // constant reg with 1
-		emit(OpCode.Compute, "Equal", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString()); // compare
+		emit(OpCode.Compute, "Equal", Indexes.RegA.toString(), Indexes.RegB.toString(),
+				Indexes.RegA.toString()); // compare
 		emit(OpCode.Branch, Indexes.RegA.toString(), beginLabel); // branch
 		return null;
 	}
@@ -287,11 +295,13 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 			emit(OpCode.Jump, checkLabel); // jump to check
 
 			// Content of while
-			emit(beginLabel, OpCode.Compute, "Mul", Indexes.RegA.toString(), Indexes.RegE.toString(), Indexes.RegE.toString());
+			emit(beginLabel, OpCode.Compute, "Mul", Indexes.RegA.toString(), Indexes.RegE.toString(),
+					Indexes.RegE.toString());
 			emit(OpCode.Compute, "Sub", Indexes.RegB.toString(), Indexes.RegC.toString(), Indexes.RegB.toString());
 
 			// Checking part
-			emit(checkLabel, OpCode.Compute, "GtE", Indexes.RegB.toString(), Indexes.RegC.toString(), Indexes.RegD.toString());
+			emit(checkLabel, OpCode.Compute, "GtE", Indexes.RegB.toString(), Indexes.RegC.toString(),
+					Indexes.RegD.toString());
 			emit(OpCode.Branch, Indexes.RegD.toString(), beginLabel);
 		}
 		emit(OpCode.Jump, endLabel);
@@ -417,7 +427,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 			operands += string + " ";
 		}
 		if (label != null) {
-			labels.add(new Label(label, lineNum));
+			labels.put(label, new Label(label, lineNum));
 		}
 		lineNum++;
 		try {
@@ -428,7 +438,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		}
 	}
 
-	private int getNewLabelID() {
-		return labelID++;
+	private String getNewLabelID() {
+		return "#temp#" + labelID++ + "#temp#";
 	}
 }

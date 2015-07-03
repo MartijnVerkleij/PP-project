@@ -8,6 +8,7 @@ import java.util.Stack;
 
 public class SymbolTable {
 
+	private final static int functionOffset = 1;
 	// Global Scope
 	private Map<String, Type> globalTypes = new HashMap<>();
 	private Map<String, Integer> globalOffsets = new HashMap<>();
@@ -40,7 +41,7 @@ public class SymbolTable {
 		for (Integer i : size) {
 			totalsize += i;
 		}
-		arps.push(totalsize + 2 + parameterLength);
+		arps.push(totalsize + functionOffset + parameterLength);
 	}
 
 	/**
@@ -117,7 +118,7 @@ public class SymbolTable {
 		if (types.isEmpty()) {
 			System.err.println("No scope to assign variable to for variable " + id);
 		}
-		
+
 		if (!types.peek().containsKey(id)) {
 			types.peek().put(id, type);
 			offsets.peek().put(id, this.size.peek());
