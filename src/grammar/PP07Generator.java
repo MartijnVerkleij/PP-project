@@ -278,8 +278,8 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 
 	@Override
 	public Op visitPlusExpr(@NotNull GrammarParser.PlusExprContext ctx) {
-		visit(ctx.expr(0));
 		visit(ctx.expr(1));
+		visit(ctx.expr(0));
 		emit(OpCode.Pop, Indexes.RegA.toString());
 		emit(OpCode.Pop, Indexes.RegB.toString());
 		if (ctx.plusOp().PLUS() == null) {
@@ -293,8 +293,8 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 
 	@Override
 	public Op visitMultExpr(@NotNull GrammarParser.MultExprContext ctx) {
-		visit(ctx.expr(0));
 		visit(ctx.expr(1));
+		visit(ctx.expr(0));
 		emit(OpCode.Pop, Indexes.RegA.toString());
 		emit(OpCode.Pop, Indexes.RegB.toString());
 		if (ctx.multOp().STAR() == null) {
@@ -313,8 +313,8 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		String endLabel = getNewLabelID();
 
 		// Evaluating expressions
-		visit(ctx.expr(0));
 		visit(ctx.expr(1));
+		visit(ctx.expr(0));
 		// Saving expressions to registers
 		emit(OpCode.Pop, Indexes.RegA.toString()); // value to multiply
 		emit(OpCode.Pop, Indexes.RegB.toString()); // times to multiply
@@ -356,8 +356,8 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 
 	@Override
 	public Op visitBoolExpr(@NotNull GrammarParser.BoolExprContext ctx) {
-		visit(ctx.expr(0));
 		visit(ctx.expr(1));
+		visit(ctx.expr(0));
 		emit(OpCode.Pop, Indexes.RegA.toString());
 		emit(OpCode.Pop, Indexes.RegB.toString());
 		if (ctx.boolOp().AND() == null) {
@@ -371,8 +371,8 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 
 	@Override
 	public Op visitCmpExpr(@NotNull GrammarParser.CmpExprContext ctx) {
-		visit(ctx.expr(0));
 		visit(ctx.expr(1));
+		visit(ctx.expr(0));
 		emit(OpCode.Pop, Indexes.RegA.toString());
 		emit(OpCode.Pop, Indexes.RegB.toString());
 		if (ctx.cmpOp().EQ() != null) {
