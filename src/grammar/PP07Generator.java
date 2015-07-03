@@ -23,7 +23,7 @@ thread lock				-- global
 public class PP07Generator extends GrammarBaseVisitor<Op> {
 	private final Value DEFAULT_VALUE = new Value(0);
 	private final Integer STD_IO = 0x1000000;
-	private final Type type = Type.VOID;
+	private final Type type = Type.INT;
 	private BufferedWriter writer;
 	private BufferedReader reader;
 	private SymbolTable symbolTable;
