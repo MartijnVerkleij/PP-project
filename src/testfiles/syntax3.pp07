@@ -53,7 +53,7 @@ void main() {
 	a = a + setAndGet(50);
 	run t0 (doALot, 10, 20, 30);
 	run t1 (doMore);
-	run t2 (doALot, 0, 15, 45);
+	run t2 (doALot(), 0, 15, 45);
 	join t0;
 	join t2;
 	a = join t1;

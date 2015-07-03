@@ -12,7 +12,7 @@ int getInteger() {
 	return integer;
 }
 
-void setStuff(int number) {
+ setStuff(int number) {
 	lock lock0;
 	int = number;
 	if (bool) {

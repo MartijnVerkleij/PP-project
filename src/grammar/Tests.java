@@ -35,6 +35,10 @@ public class Tests {
 		assertFalse(errors.isEmpty());
 		errors = runChecker("syntax2");
 		assertFalse(errors.isEmpty());
+		errors = runChecker("syntax3");
+		assertFalse(errors.isEmpty());
+		errors = runChecker("syntax4");
+		assertFalse(errors.isEmpty());
 	}
 
 	@Test
@@ -45,6 +49,10 @@ public class Tests {
 		errors = runChecker("context1");
 		assertFalse(errors.isEmpty());
 		errors = runChecker("context2");
+		assertFalse(errors.isEmpty());
+		errors = runChecker("context3");
+		assertFalse(errors.isEmpty());
+		errors = runChecker("context4");
 		assertFalse(errors.isEmpty());
 	}
 

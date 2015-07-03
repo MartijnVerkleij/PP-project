@@ -9,7 +9,7 @@ void init() {
 
 int getInteger() {
 	while (locked lock0) {}
-	return integer;
+	returm integer;
 }
 
 void setStuff(int number) {

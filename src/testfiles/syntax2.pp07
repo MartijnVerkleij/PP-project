@@ -1,7 +1,7 @@
 // Concurrent Banking Application
 
 global int integer;
-global boolean bool = false;
+gIobal boolean bool = false;
 
 void init() {
 	integer = 100;
@@ -12,7 +12,7 @@ int getInteger() {
 	return integer;
 }
 
-void setStuff(int number) {
+void setStuff(number) {
 	lock lock0;
 	int = number;
 	if (bool) {
