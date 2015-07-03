@@ -4,6 +4,9 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{wrapfig}
+\usepackage{amsthm}
+\usepackage{float} \floatstyle{boxed} \restylefloat{figure}
 \author{Martijn Verkleij (s1466895) and Tim Kerkhoven (s1375253)}
 \title{Report PP07}
 \begin{document}
@@ -12,11 +15,15 @@
 \maketitle
 \tableofcontents
 
-\chapter{Grammar} \label{Grammar}
 
-\chapter{Structure} \label{Structure}
-In this chapter the structure of the compiled code is discussed. For the structure of the language itself, see section \ref{Grammar}. 
-\section{Thread branching}
+\chapter{Features}
+PP07 is a programming language written for execution on the Sprockell simulator. It was written as a Turing-complete language that supports basic operations, if and else and while. It is further projected to support functions, concurrent execution with futures and enumerations. The language uses call-by-value to resolve variables. A more elaborate list of all supported operations can be found in chapter \ref{chp:langdesc}.   
+
+\chapter{Language description} \label{chp:langdesc}
+
+\section{Program Structure} \label{sec:structure}
+In this chapter the structure of the compiled code is discussed. For the structure of the language itself, see section \ref{sec:grammar}. 
+\subsection{Thread branching}
 Before the program can begin, the individial threads must be separated. This is done by the following set of instructions:
 \begin{verbatim}
 	Const 4 Reg1				// Load 4
@@ -28,7 +35,7 @@ Before the program can begin, the individial threads must be separated. This is 
 	Jump (Abs 0xFF)
 \end{verbatim}
 
-\section{Thread control loop}
+\subsection{Thread control loop}
 Each Sprockell is redirected to a part of the program reserved for itself where it will continuously poll shared memory to see whether it has been assigned a function to execute. If this is the case, it will prepare the new thread for execution and execute the task. Whenever the task is finished, it will write the result of the function, if applicable, to its return value field, which is then marked ready. Another thread can then read this value again with a \texttt{join} statement. When a join statement is executed, that thread will then continuously poll for the return value to be ready. If it is, it is read out and its ready bit and the thread's occupation bit are unset. This means a thread with a non-null return value MUST be joined, since the thread will otherwise lock a Sprockell forever. 
 
 A thread control loop looks as follows:
@@ -44,62 +51,159 @@ A thread control loop looks as follows:
 	Jump (Rel -7)						// jump to start
 \end{verbatim}
 
-\section{Functions}
-All functions follow after the thread control loops. These are listed in order, and can be called by any thread, sequentially or in parallel.
 
-\section{Main}
+\subsection{Functions}
+All functions follow after the thread control loops. These are listed in order, and can be called by any thread, sequentially or in parallel. The two are distinct in that in the sequential case an activation record is added to the local stack, and in the parallel case a free Sprockell is selected to do the task, from which a result can be read with a join statement.
+
+\subsection{Main}
+
+
 Since \texttt{main} is in fact a function itself, it looks very similar, except for the fact that it is the only function called directly, not by any PP07-code. It also differs from the others since it has an EndProg statement at the end.
 
-\chapter{Memory model}
+\section{Statements}
+
+\subsection{Variables}
+
+\subsubsection*{Variable Declaration}
+A variable can be declared with scope-awareness.
+\begin{description}
+	\item[Syntax:] 
+		int \textless variablename \textgreater [= \textless expression \textgreater];
+	\item[Example:] 
+		int i;
+		int i = 5; 
+		int i = 5 * j + 6;
+\end{description} 
+
+
+
+
+\subsection{Functions}
+\subsubsection{Function Definition}
+
+\subsubsection{Parallel function call}
+In a parallel function call the caller must set up some things before the function can be executed. An activation record (Section \ref{fig:actrecord}) must be made. 
+
+\paragraph{Pre-call}
+\begin{verbatim}
+	// All activation records are pushed on the stack.
+		
+	 
+	
+	// Caller's ARP
+	Load #carp Reg1
+	Push Reg1 
+	
+	// Return address
+	Load #raddr Reg1	
+	Push Reg1
+	
+	// Return value
+	Push Zero
+	
+	// Variables
+	Load #varc Reg2 // Start of variables loop
+	Const 1 Reg5 // decrementer
+	Const #var1 Reg3 // Address of first variable
+	Compute Sub Reg2 Reg5 Reg2
+	Compute Add Reg2 Reg3 Reg4
+	Load (Deref Reg4) Reg1 //Load argument
+	Push Reg1 // single argument
+	Branch Reg2 (Rel -4)
+	
+	// Variable count
+	Load #varc Reg2 // Load again to push to stack
+	Push Reg2 // variable count
+	
+	// Arguments
+	Load #argc Reg2
+	Const 1 Reg5
+	Const #arg1 Reg3
+	Compute Add Reg2 Reg3 Reg4
+	Load (Deref Reg4) Reg1
+	Push Reg1
+	Compute Sub Reg2 Reg5 Reg2 
+	Branch Reg2 (Rel -4)
+	
+	// Argument Count
+	Load #argc Reg2
+	Push Reg1
+	
+\end{verbatim}
+
+
+
+\subsubsection{Parallel function call}
+
+
+
+
+
+
+\section{Memory model}
 Sprockell has various levels of memory, namely in the form of registers, local memory and shared memory. These three levels have a specific model which is explained in this chapter.
 
-\section{Registers}
+\subsection{Registers}
 Registers do not have a general model outside of the special registers used by the Sprockell itself. This means they can be used freely by the specific operations during compile time.
 
-\section{Local memory}
+\subsection{Local memory}
 Local memory is meant to store thread-specific data in. It will be used to store activation records. 
 
-\section{Global memory}
-Global memory has a more elaborate structure, since it stores not only data shared between threads, it also needs records to control threads' behaviour. Information about how and why these records are used can be found in section \ref{Structure}. 
+\label{fig:actrecord}
+Activation Record
+ 
+\begin{tabular}{| l | l |}
+\hline
+	ARP
+		& Pointer to the caller's activation record on the stack \\	
 
-\subsection{Thread control records}
-Thread control records are used to control the execution of parallel threads on the number of Sprockells that are provided in the thread pool. Each Sprockell with \texttt{SPID > 0} has one of these records. Each record contains the following:
-
-\begin{tabular}{| l || l |}
-\hline
-Occupation & Whether the tread is now active. This may only be flipped with a CompareAndSet. \\
-\hline
-PC-pointer & Used by functions to let this Sprockell execute a task in parallel. \\
-\hline
-PC-pointer ready & Set when the PC-pointer is ready to read. \\
-\hline
-Return value & Value written by the function on completion, if it has any. \\
-\hline
-Return value ready & Set when the thread has finished execution. \\
-\hline
-Argument count & Number of arguments\\
-\hline
-Argument pointer & pointer to arguments in shared memory \\ 
+	Return Address
+		& Instruction to jump to after the function finishes \\
+	
+	Caller's ARP 	
+		& \\
+	
+	Parameters 
+		& All parameters given as arguments to this function. \\
+	
+	Variables 
+		& All variables inherited and all declared variables \\	
 \hline
 \end{tabular}
 
-\subsection{Argument space}
-Since argument size can be arbitrarily large in case of arrays (which was not implemented, however), this space is reserved for arguments for each thread. A pointer in the thread control record points here.
+\subsection{Global memory}
+Global memory has a more elaborate structure, since it stores not only data shared between threads, it also needs records to control threads' behaviour. Information about how and why these records are used can be found in section \ref{sec:structure}. 
 
-\subsection{Global variables}
+\subsubsection{Thread control records}
+Thread control records are used to control the execution of parallel threads on the number of Sprockells that are provided in the thread pool. Each Sprockell with \texttt{SPID > 0} has one of these records. Each record contains the following:
+
+\begin{tabular}{| l | l |}
+\hline
+Occupation 
+	& Whether the tread is now active. This may only be flipped with a CompareAndSet. \\
+PC-pointer 
+	& Used by functions to let this Sprockell execute a task in parallel. \\
+PC-pointer ready 
+	& Set when the PC-pointer is ready to read. \\
+Return value 
+	& Value written by the function on completion, if it has any. \\
+Return value ready 
+	& Set when the thread has finished execution. \\
+Argument count 
+	& Number of arguments. \\
+Argument pointer 
+	& pointer to argument space in shared memory. \\ 
+\hline
+\end{tabular}
+
+\subsubsection{Argument space}
+Since argument size can be arbitrarily large in case of arrays (which was not implemented, however), this space is reserved for arguments for each thread. A pointer in the thread control record points here.
+       
+\subsubsection{Global variables}
 Global variables are declared at the end of memory, to avoid collision with the argument space. Since no types are available in the language that are larger than one word, variables can be placed in one slot each.
 
 
-
-Activation Record
-\begin{itemize}
-	\item Variables
-	\item ARP
-	\item Return value
-	\item Return Address
-	\item Caller's ARP
-	\item Parameters
-\end{itemize}
+\chapter{Software description}
 
 
 \end{document}
