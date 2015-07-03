@@ -9,10 +9,6 @@ import org.junit.Test;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.List;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class Tests {
 	private final static String BASE_DIR = "src/testfiles/";
@@ -27,32 +23,60 @@ public class Tests {
 
 	@Test
 	public void testSyntax() {
-		List<String> errors;
-		errors = runChecker("syntax0");
-		assertTrue(errors.isEmpty());
-		errors = runChecker("syntax1");
-		assertFalse(errors.isEmpty());
-		errors = runChecker("syntax2");
-		assertFalse(errors.isEmpty());
-		errors = runChecker("syntax3");
-		assertFalse(errors.isEmpty());
-		errors = runChecker("syntax4");
-		assertFalse(errors.isEmpty());
+		try {
+			runChecker("syntax0");
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		try {
+			runChecker("syntax1");
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		try {
+			runChecker("syntax2");
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		try {
+			runChecker("syntax3");
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		try {
+			runChecker("syntax4");
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Test
 	public void testContext() {
-		List<String> errors;
-		errors = runChecker("context0");
-		assertTrue(errors.isEmpty());
-		errors = runChecker("context1");
-		assertFalse(errors.isEmpty());
-		errors = runChecker("context2");
-		assertFalse(errors.isEmpty());
-		errors = runChecker("context3");
-		assertFalse(errors.isEmpty());
-		errors = runChecker("context4");
-		assertFalse(errors.isEmpty());
+		try {
+			runChecker("context0");
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		try {
+			runChecker("context1");
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		try {
+			runChecker("context2");
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		try {
+			runChecker("context3");
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		try {
+			runChecker("context4");
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Test
@@ -64,15 +88,14 @@ public class Tests {
 		*/
 	}
 
-	private List<String> runChecker(String file) {
-		List<String> errors = null;
+	private void runChecker(String file) throws ParseException {
+		ParseTree tree = null;
 		try {
-			ParseTree tree = parse(new ANTLRInputStream(new FileReader(new File(BASE_DIR + file + EXT))));
-			errors = new PP07Checker().check(tree);
-		} catch (ParseException | IOException e) {
+			tree = parse(new ANTLRInputStream(new FileReader(new File(BASE_DIR + file + EXT))));
+		} catch (IOException | ParseException e) {
 			e.printStackTrace();
 		}
-		return errors;
+		new PP07Checker().check(tree);
 	}
 
 	private void runGenerator(String file) {
