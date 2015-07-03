@@ -22,8 +22,7 @@ public class Tests {
 		Lexer lexer = new GrammarLexer(chars);
 		TokenStream tokens = new CommonTokenStream(lexer);
 		GrammarParser parser = new GrammarParser(tokens);
-		ParseTree result = parser.program();
-		return result;
+		return parser.program();
 	}
 
 	@Test
