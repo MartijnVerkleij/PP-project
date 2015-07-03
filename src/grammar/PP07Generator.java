@@ -164,13 +164,13 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 			String endLabel = getNewLabelID(); // label for jump to end
 
 			// jump to end or continue
-			emit(OpCode.Branch, Indexes.RegA.toString(), endLabel);
+			emit(OpCode.Branch, Indexes.RegA.toString(), "(Abs " + endLabel + ")");
 			visit(ctx.block(0));
 			emit(endLabel, OpCode.Nop);
 		} else {
 			String elseLabel = getNewLabelID(); // label for jump to else
 
-			emit(OpCode.Branch, Indexes.RegA.toString(), elseLabel);
+			emit(OpCode.Branch, Indexes.RegA.toString(), "(Abs " + elseLabel + ")");
 			visit(ctx.block(0));
 			emit(elseLabel, OpCode.Nop);
 			visit(ctx.block(1));
@@ -184,7 +184,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		String beginLabel = getNewLabelID();
 		String checkLabel = getNewLabelID();
 
-		emit(OpCode.Jump, checkLabel); // jump to check
+		emit(OpCode.Jump, "(Abs " + checkLabel + ")"); // jump to check
 		emit(beginLabel, OpCode.Nop); // set begin label
 		visit(ctx.block()); // content of while
 
@@ -194,7 +194,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		emit(OpCode.Const, "1", Indexes.RegB.toString()); // constant reg with 1
 		emit(OpCode.Compute, "Equal", Indexes.RegA.toString(), Indexes.RegB.toString(),
 				Indexes.RegA.toString()); // compare
-		emit(OpCode.Branch, Indexes.RegA.toString(), beginLabel); // branch
+		emit(OpCode.Branch, Indexes.RegA.toString(), "(Abs " + beginLabel + ")"); // branch
 		return null;
 	}
 
@@ -315,7 +315,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 
 		// Checking for 0 in RegB
 		emit(OpCode.Compute, "Equal", Indexes.RegB.toString(), Indexes.Zero.toString(), Indexes.RegD.toString());
-		emit(OpCode.Branch, Indexes.RegD.toString(), zeroLabel);
+		emit(OpCode.Branch, Indexes.RegD.toString(), "(Abs " + zeroLabel + ")");
 
 		// Continue if not zero
 		emit(OpCode.Const, "1", Indexes.RegC.toString()); // constant reg with 1, used for compare
@@ -325,7 +325,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 			String beginLabel = getNewLabelID();
 			String checkLabel = getNewLabelID();
 
-			emit(OpCode.Jump, checkLabel); // jump to check
+			emit(OpCode.Jump, "(Abs " + checkLabel + ")"); // jump to check
 
 			// Content of while
 			emit(beginLabel, OpCode.Compute, "Mul", Indexes.RegA.toString(), Indexes.RegE.toString(),
@@ -335,9 +335,9 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 			// Checking part
 			emit(checkLabel, OpCode.Compute, "GtE", Indexes.RegB.toString(), Indexes.RegC.toString(),
 					Indexes.RegD.toString());
-			emit(OpCode.Branch, Indexes.RegD.toString(), beginLabel);
+			emit(OpCode.Branch, Indexes.RegD.toString(), "(Abs " + beginLabel + ")");
 		}
-		emit(OpCode.Jump, endLabel);
+		emit(OpCode.Jump, "(Abs " + endLabel + ")");
 
 		// Jump target if zero
 		emit(zeroLabel, OpCode.Const, "1", Indexes.RegE.toString()); // constant with 1, for returning
