@@ -18,13 +18,13 @@ void setStuff(int number) {
 	if (x) {
 		x = !x;
 	} else {
-		(x == x) || (true);
+		x = x || (true);
 	}
 	unlock lock0;
 }
 
-int setAndGet(int number) {
-	setStuff(number);
+int setAndGet(int num) {
+	setStuff(num);
 	return getY();
 }
 
@@ -39,8 +39,8 @@ INT doMore() {
 	setStuff(1);
 	setStuff(2);
 	setStuff(3);
-	i = setAndGet();
-	return i();
+	i = setAndGet(4);
+	return i;
 }
 
 void main() {
@@ -50,7 +50,7 @@ void main() {
 	a = getY();
 	setStuff(82398);
 	b = x;
-	a = a + setAndGet(50);
+	a = a ++ setAndGet(50);
 	run t0 (doALot, 10, 20, 30);
 	run t1 (doMore);
 	run t2 (doALot, 0, 15, 45);

@@ -1,10 +1,10 @@
 // Concurrent Banking Application
 
 global int y;
-global bool x = false;
+global bol x = false;
 
 void init() {
-	integer = 100;
+	y = 100;
 }
 
 int getY() {
@@ -18,13 +18,13 @@ void setStuff(int number) {
 	if (x) {
 		x = !x;
 	} else {
-		x = x || true;
+		x = x || (true);
 	}
 	unlock lock0;
 }
 
-int setAndGet(int number) {
-	setStuff(number);
+int setAndGet(int num) {
+	setStuff(num);
 	return getY();
 }
 
@@ -34,13 +34,13 @@ void doALot(int i, int j, int k) {
 	setStuff(k);
 }
 
-INT doLess() {
+INT doMore() {
 	iNt i = y;
 	setStuff(1);
 	setStuff(2);
 	setStuff(3);
-	i = setAndGet();
-	return i();
+	i = setAndGet(4);
+	return i;
 }
 
 void main() {

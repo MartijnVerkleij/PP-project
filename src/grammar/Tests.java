@@ -4,6 +4,7 @@ package grammar;
 import grammar.exception.ParseException;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.File;
@@ -27,64 +28,75 @@ public class Tests {
 			runChecker("syntax0");
 		} catch (ParseException e) {
 			e.printStackTrace();
+			Assert.fail();
 		}
-//		try {
-//			runChecker("syntax1");
-//		} catch (ParseException e) {
-//			e.printStackTrace();
-//		}
-//		try {
-//			runChecker("syntax2");
-//		} catch (ParseException e) {
-//			e.printStackTrace();
-//		}
-//		try {
-//			runChecker("syntax3");
-//		} catch (ParseException e) {
-//			e.printStackTrace();
-//		}
-//		try {
-//			runChecker("syntax4");
-//		} catch (ParseException e) {
-//			e.printStackTrace();
-//		}
+		try {
+			runChecker("syntax1");
+			Assert.fail();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		try {
+			runChecker("syntax2");
+			Assert.fail();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		try {
+			runChecker("syntax3");
+			Assert.fail();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		try {
+			runChecker("syntax4");
+			Assert.fail();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
 	}
 
-//	@Test
-//	public void testContext() {
-//		try {
-//			runChecker("context0");
-//		} catch (ParseException e) {
-//			e.printStackTrace();
-//		}
-//		try {
-//			runChecker("context1");
-//		} catch (ParseException e) {
-//			e.printStackTrace();
-//		}
-//		try {
-//			runChecker("context2");
-//		} catch (ParseException e) {
-//			e.printStackTrace();
-//		}
-//		try {
-//			runChecker("context3");
-//		} catch (ParseException e) {
-//			e.printStackTrace();
-//		}
-//		try {
-//			runChecker("context4");
-//		} catch (ParseException e) {
-//			e.printStackTrace();
-//		}
-//	}
+	@Test
+	public void testContext() {
+		try {
+			runChecker("context0");
+		} catch (ParseException e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+		try {
+			runChecker("context1");
+			Assert.fail();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		try {
+			runChecker("context2");
+			Assert.fail();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		try {
+			runChecker("context3");
+			Assert.fail();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		try {
+			runChecker("context4");
+			Assert.fail();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+	}
 
 	@Test
 	public void testSemantic() {
 		/* TODO: Manually test the following files:
-		* semantics0 -> should print:
-		* semantics1 -> should print:
-		* semantics2 -> should print:
+		* semantics0 -> should print: @
+		* semantics1 -> should print: P
+		* semantics2 -> should get stuck in an infinite loop
+		* semantics3 -> should crash because of division by 0
 		*/
 	}
 

@@ -9,9 +9,7 @@ void init() {
 
 int getY() {
 	while (locked lock0) {}
-	int z = y;
-	unlock lock0;
-	return z;
+	return y;
 }
 
 void setStuff(int number) {
@@ -27,7 +25,7 @@ void setStuff(int number) {
 
 int setAndGet(int num) {
 	setStuff(num);
-	return 1; //getY();
+	return getY();
 }
 
 void doALot(int i, int j, int k) {
@@ -49,7 +47,7 @@ void main() {
 	init();
 	int a = 0;
 	bool b = x;
-//	a = getY();
+	a = getY();
 	setStuff(82398);
 	b = x;
 	a = a + setAndGet(50);
