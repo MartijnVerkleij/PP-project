@@ -18,13 +18,13 @@ void setStuff(int number) {
 	if (x) {
 		x = !x;
 	} else {
-		(x == x) || (true);
+		x = x || (true);
 	}
 	unlock lock0;
 }
 
-int setAndGet(int number) {
-	setStuff(number);
+int setAndGet(int num) {
+	setStuff(num);
 	return getY();
 }
 
@@ -39,8 +39,8 @@ INT doMore() {
 	setStuff(1);
 	setStuff(2);
 	setStuff(3);
-	i = setAndGet();
-	return i();
+	i = setAndGet(4);
+	return i;
 }
 
 void main() {
