@@ -1,0 +1,60 @@
+// Concurrent Banking Application
+
+global int integer;
+global boolean bool = false;
+
+void init() {
+	integer = 100;
+}
+
+int getInteger() {
+	while (locked lock0) {}
+	return integer;
+}
+
+void setStuff(int number) {
+	lock lock0;
+	int = number;
+	if (bool) {
+		bool = !bool;
+	} else {
+		bool = bool || true;
+	}
+	unlock lock0;
+}
+
+int setAndGet(int number) {
+	setStuff(number);
+	return getInteger();
+}
+
+void doALot(int i, int j, int k) {
+	setStuff(i);
+	setStuff(j);
+	setStuff(k);
+}
+
+INT doLess() {
+	iNt i = integer;
+	setStuff(1);
+	setStuff(2);
+	setStuff(3);
+	i = setAndGet();
+	return i();
+}
+
+void main() {
+	init();
+	int a = 0;
+	boolean b = bool;
+	a = getInteger();
+	setStuff(82398);
+	b = bool;
+	a = a + setAndGet(50);
+	run t0 (doALot, 10, 20, 30);
+	run t1 (doMore);
+	run t2 (doALot(), 0, 15, 45);
+	join t0;
+	join t2;
+	a = join t1;
+}
