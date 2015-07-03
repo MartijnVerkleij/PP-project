@@ -307,6 +307,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		return null;
 	}
 
+	// Very inefficient because of bad thinking during heat, may revisit later
 	@Override
 	public Op visitExpExpr(@NotNull GrammarParser.ExpExprContext ctx) {
 		// Labels
@@ -326,7 +327,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 
 		// Continue if not zero
 		emit(OpCode.Const, "1", Indexes.RegC.toString()); // constant reg with 1, used for compare
-		emit(OpCode.Compute, "Add", Indexes.RegA.toString(), Indexes.Zero.toString(), Indexes.RegA.toString());
+		emit(OpCode.Const, "1", Indexes.RegE.toString()); // constant reg with 1, used for result
 		{ // Block to clarify, while loop in here
 			// More Labels
 			String beginLabel = getNewLabelID();
