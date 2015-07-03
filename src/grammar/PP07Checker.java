@@ -132,6 +132,7 @@ public class PP07Checker extends GrammarBaseListener {
 	
 	@Override
 	public void enterFuncStat(FuncStatContext ctx) {
+		symbolTable.openScope();
 		for (int i = 1; i < ctx.ID().size(); i++) {
 			if (!symbolTable.addGlobal(ctx.ID(i).getText(), getType(ctx.type(i))))
 				addError("Variable name " + ctx.ID(i).getText() + " already declared in global scope");
@@ -142,6 +143,7 @@ public class PP07Checker extends GrammarBaseListener {
 	
 	@Override
 	public void exitFuncStat(FuncStatContext ctx) {
+		symbolTable.closeScope();
 		// already done in FunctionWalker
 		setEntry(ctx, entry(ctx.block()));
 		functions.getFunction(ctx.ID(0).getText()).setContext(ctx);
