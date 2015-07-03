@@ -3,6 +3,7 @@ package grammar;
 import grammar.Functions.Function;
 import grammar.GrammarParser.*;
 import grammar.exception.ParseException;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -128,7 +129,17 @@ public class PP07Checker extends GrammarBaseListener {
 		setType(ctx, getType(ctx.block()));
 		setEntry(ctx, entry(ctx.block()));
 	}
-
+	
+	@Override
+	public void enterFuncStat(FuncStatContext ctx) {
+		for (int i = 1; i < ctx.ID().size(); i++) {
+			if (!symbolTable.addGlobal(ctx.ID(i).getText(), getType(ctx.type(i))))
+				addError("Variable name " + ctx.ID(i).getText() + " already declared in global scope");
+		}
+		
+		
+	}
+	
 	@Override
 	public void exitFuncStat(FuncStatContext ctx) {
 		// already done in FunctionWalker
