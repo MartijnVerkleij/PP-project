@@ -22,14 +22,25 @@ public class SymbolTable {
 	 * Adds a next deeper scope level.
 	 */
 	public void openScope() {
-		types.add(new HashMap<>());
-		offsets.add(new HashMap<>());
-		size.add(0);
+		types.push(new HashMap<>());
+		offsets.push(new HashMap<>());
+		size.push(0);
 		int totalsize = 0;
 		for (Integer i : size) {
 			totalsize += i;
 		}
-		arps.add(totalsize);
+		arps.push(totalsize);
+	}
+
+	public void openScope(int parameterLength /*in words*/) {
+		types.push(new HashMap<>());
+		offsets.push(new HashMap<>());
+		size.push(0);
+		int totalsize = 0;
+		for (Integer i : size) {
+			totalsize += i;
+		}
+		arps.push(totalsize + 2 + parameterLength);
 	}
 
 	/**
@@ -177,7 +188,7 @@ public class SymbolTable {
 		Integer offset = null;
 		for (int i = offsets.size() - 1; i >= 0; i--) {
 			if (offsets.get(i).containsKey(id)) {
-				offset = offsets.get(i).get(id);
+				offset = offsets.get(i).get(id) + arp(id);
 				break;
 			}
 		}
