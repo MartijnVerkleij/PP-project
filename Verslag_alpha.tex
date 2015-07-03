@@ -36,8 +36,9 @@ Before the program can begin, the individial threads must be separated. This is 
 	Const 4 Reg1				// Load 4
 	Compute Add SPID Reg1 Reg2	// Compute SPID + 4 in Reg2
 	Jump (Ind Reg2)				// Branch out
-	Jump (Abs 0xFFF)			// Main thread --> main program
-	Jump (Abs 0xF0)				// Sprockell for thread pool --> thread control loop
+	Jump (Abs 0xFFF)			// Main thread -> main program
+	Jump (Abs 0xF0)				// Sprockell for thread pool -> 
+										thread control loop
 	...
 	Jump (Abs 0xFF)
 \end{lstlisting}
@@ -142,8 +143,100 @@ An expression in itself is also a statement. This may be illogical, but a functi
 \end{description} 
 
 \section{Expressions}
+Expressions are always part of a statement. This makes using the stack for solving expression trees possible. An expression may or may not pop a number of values from the stack as input, and return one value to the stack. 
 
 \subsection{Plus and minus}
+\begin{description}
+	\item[Syntax:] \hfill \\ 
+		\textless expression\textgreater ~+ \textless expression \textgreater \\
+		\textless expression\textgreater ~- \textless expression \textgreater
+	\item[Example:] \hfill \\
+		3 + 5 + 6 + 7 
+\end{description} 
+Plus and minus are only defined for expressions which return an integer. They return an integer.
+
+\subsection{Multiplication and integer division}
+\begin{description}
+	\item[Syntax:] \hfill \\ 
+		\textless expression\textgreater ~* \textless expression \textgreater \\
+		\textless expression\textgreater ~/ \textless expression \textgreater
+	\item[Example:] \hfill \\
+		3 / 5 * 36
+\end{description}
+Multiplication is defined for two integer expressions, and returns an integer.
+Division is also defined for two integer expressions, it returns the integer division of the two expressions. 
+
+\subsection{Exponentiation}
+\begin{description}
+	\item[Syntax:] \hfill \\ 
+		\textless expression\textgreater \^{} \textless expression \textgreater
+	\item[Example:] \hfill \\
+		3 \^{} 5
+\end{description}
+Exponentiation is defined for two integers, and returns the result of expression 1 to the power of expression 2 as an integer.
+
+\subsection{Boolean Operations}
+\begin{description}
+	\item[Syntax:] \hfill \\ 
+		\textless expression\textgreater \&\& \textless expression \textgreater \\
+		\textless expression\textgreater || \textless expression \textgreater
+	\item[Example:] \hfill \\
+		i \&\& (3 < 5)
+\end{description}
+Boolean operators require two boolean expressions as input, and deliver the boolean AND or OR result repectively as a boolean value.
+
+\subsection{Comparison Operations}
+\begin{description}
+	\item[Syntax:] \hfill \\ 
+		\textless expression\textgreater ~== \textless expression\textgreater \\
+		\textless expression\textgreater ~\textgreater ~\textless expression\textgreater \\
+		\textless expression\textgreater ~\textgreater = ~\textless expression\textgreater \\
+		\textless expression\textgreater ~\textless ~\textless expression\textgreater \\
+		\textless expression\textgreater ~\textless = \textless expression\textgreater \\
+		\textless expression\textgreater ~!= \textless expression \textgreater
+	\item[Example:] \hfill \\
+		3 \textless ~5 \\
+		5 != 6
+		
+\end{description}
+Comparison operators require two boolean expressions as input, and deliver whether the two are equal, larger than, larger than or equal to, smaller than, smaller than or equal to and not equal respectively as a boolean value.
+
+\subsection{Prefix Operations}
+\begin{description}
+	\item[Syntax:] \hfill \\ 
+		- \textless expression\textgreater \\
+		! \textless expression\textgreater
+	\item[Example:] \hfill \\
+		!True == False \\
+		-5
+\end{description}
+The minus operator accepts an integer expression as input and returns the negative equivalent of the same integer as an integer.
+The not operator accepts a boolean expression as input and returns the opposing value as a boolean.
+
+\subsection{Non-operations}
+\subsubsection*{Parantheses}
+\subsection{Prefix Operations}
+\begin{description}
+	\item[Syntax:] \hfill \\ 
+		( \textless expression\textgreater )
+	\item[Example:] \hfill \\
+		(3 + 2) * 5
+\end{description}
+Not implemented in SPRiL-code, parentheses serve in the parsing phase as a way to give explicit priority in resolving expressions.
+
+\subsubsection*{ID's, numbers and boolean values}
+\begin{description}
+	\item[Syntax:] \hfill \\ 
+		 \textless variable name\textgreater \\
+		 \textless number\textgreater \\
+		 true\\
+		 false
+	\item[Example:] \hfill \\
+		i\\
+		5\\
+		false
+\end{description}
+These serve as the leaves of all expressions inside the language. Variable names have to be resolved from memory, either local or shared, and return its value, which is of the variable's type given at declaration. Numbers represent their own value in integer form, and true and false represent their values in boolean form.
 
 \subsection{Functions} \label{subsec:functions}
 \subsubsection{Function Definition}
@@ -165,49 +258,6 @@ A function can be called in sequence. This adds a new activation record to memor
 
 
 In a sequential function call the caller must set up some things before the function can be executed. An activation record (Section \ref{fig:actrecord}) must be made. 
-
-\paragraph{Pre-call}
-\begin{lstlisting}
-	// Caller's ARP
-	Load #carp Reg1
-	Push Reg1 
-	
-	// Return address
-	Load #raddr Reg1	
-	Push Reg1
-	
-	// Return value
-	Push Zero
-	
-	// Variables
-	Load #varc Reg2 // Start of variables loop
-	Const 1 Reg5 // decrementer
-	Const #var1 Reg3 // Address of first variable
-	Compute Sub Reg2 Reg5 Reg2
-	Compute Add Reg2 Reg3 Reg4
-	Load (Deref Reg4) Reg1 //Load argument
-	Push Reg1 // single argument
-	Branch Reg2 (Rel -4)
-	
-	// Variable count
-	Load #varc Reg2 // Load again to push to stack
-	Push Reg2 // variable count
-	
-	// Arguments
-	Load #argc Reg2
-	Const 1 Reg5
-	Const #arg1 Reg3
-	Compute Add Reg2 Reg3 Reg4
-	Load (Deref Reg4) Reg1
-	Push Reg1
-	Compute Sub Reg2 Reg5 Reg2 
-	Branch Reg2 (Rel -4)
-	
-	// Argument Count
-	Load #argc Reg2
-	Push Reg1
-	
-\end{lstlisting}
 
 
 
@@ -282,6 +332,10 @@ Global variables are declared at the end of memory, to avoid collision with the 
 
 
 \chapter{Software description}
+
+\chapter{Test plan and results}
+
+\chapter{Conclusion}
 
 \begin{appendices}
 
@@ -543,6 +597,8 @@ WS: [ \t\r\n]+ -> skip;
 
 
 \end{lstlisting}
+
+\chapter{Extended test program}
 
 \end{appendices}
 
