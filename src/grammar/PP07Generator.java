@@ -162,25 +162,25 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		visit(ctx.expr());
 		emit(OpCode.Pop, Indexes.RegA.toString()); // value to compare
 
-		emit(OpCode.Const, "0", Indexes.RegB.toString()); // constant reg with 0
-		emit(OpCode.Compute, "Equal", Indexes.RegA.toString(), Indexes.RegB.toString(),
+		emit(OpCode.Compute, "Equal", Indexes.RegA.toString(), Indexes.Zero.toString(),
 				Indexes.RegA.toString()); // compare
 
-		if (ctx.ELSE() != null) {
-			String endLabel = getNewLabelID(); // label for jump to end
+		String endLabel = getNewLabelID(); // label for jump to end
 
+		if (ctx.ELSE() == null) {
 			// jump to end or continue
 			emit(OpCode.Branch, Indexes.RegA.toString(), "(Abs " + endLabel + ")");
 			visit(ctx.block(0));
-			emit(endLabel, OpCode.Nop);
 		} else {
 			String elseLabel = getNewLabelID(); // label for jump to else
 
 			emit(OpCode.Branch, Indexes.RegA.toString(), "(Abs " + elseLabel + ")");
 			visit(ctx.block(0));
+			emit(OpCode.Jump, "(Abs " + endLabel + ")");
 			emit(elseLabel, OpCode.Nop);
 			visit(ctx.block(1));
 		}
+		emit(endLabel, OpCode.Nop);
 		return null;
 	}
 
