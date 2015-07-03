@@ -9,9 +9,7 @@ void init() {
 
 int getY() {
 	while (locked lock0) {}
-	int z = y;
-	unlock lock0;
-	return z;
+	return y;
 }
 
 void setStuff(int number) {
