@@ -70,7 +70,8 @@ public class PP07FunctionWalker extends GrammarBaseListener {
 		for (int i = 0; i < ctx.ID().size() - 1; i++) {
 			arguments[i] = getType(ctx.type( i + 1));
 		}
-		if (!functions.addFunction(ctx.ID(0).getText(), getType(ctx.type(0)) , arguments)) {
+		Type t = getType(ctx.type(0)) ;
+		if (!functions.addFunction(ctx.ID(0).getText(), t, arguments)) {
 			addError("Function name " + ctx.ID(0).getText() + " already declared in program");
 		}
 	}
@@ -92,7 +93,7 @@ public class PP07FunctionWalker extends GrammarBaseListener {
 	public Type getType(TypeContext ctx) {
 		if (ctx.getToken(GrammarParser.BOOL, 0) != null) return Type.BOOL;
 		if (ctx.getToken(GrammarParser.INT, 0) != null) return Type.INT;
-		if (ctx.getToken(GrammarParser.INT, 0) != null) return Type.VOID;
+		if (ctx.getToken(GrammarParser.VOID, 0) != null) return Type.VOID;
 		return null;
 	}
 	

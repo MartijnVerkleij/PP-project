@@ -265,6 +265,7 @@ public class PP07Checker extends GrammarBaseListener {
 			stat = stat.getParent();
 		}
 		FuncStatContext function = ((FuncStatContext) stat);
+		ParserRuleContext t = ctx.expr();
 		checkType(function.type(0), getType(ctx.expr()));
 		setEntry(ctx, ctx.expr());
 	}
@@ -333,9 +334,10 @@ public class PP07Checker extends GrammarBaseListener {
 								+ " Actual: " + getType(ctx.expr(i)));
 						good = false;
 					}
-					if (good) {
-						setType(ctx, function.getReturntype());
-					}
+				}
+				if (good) {
+					setType(ctx, function.getReturntype());
+					System.out.println(ctx.getText());
 				}
 			} else {
 				addError("Argument count of call " + name + " did not match. "
@@ -346,6 +348,7 @@ public class PP07Checker extends GrammarBaseListener {
 		} else {
 			addError("Function " + ctx.ID().getText() + " not defined");
 		}
+		System.out.println(ctx.getText());
 	}
 
 	/**
@@ -547,7 +550,7 @@ public class PP07Checker extends GrammarBaseListener {
 					+ node.getText());
 		}
 		if (!actual.equals(expected)) {
-			addError(node.getText() + "\nExpected type '" + expected + "' but found '" + actual + "'");
+			addError(node.getParent().getText() + "\nExpected type '" + expected + "' but found '" + actual + "'");
 			return;
 		}
 		return;
@@ -610,7 +613,7 @@ public class PP07Checker extends GrammarBaseListener {
 	public Type getType(TypeContext ctx) {
 		if (ctx.getToken(GrammarParser.BOOL, 0) != null) return Type.BOOL;
 		if (ctx.getToken(GrammarParser.INT, 0) != null) return Type.INT;
-		if (ctx.getToken(GrammarParser.INT, 0) != null) return Type.VOID;
+		if (ctx.getToken(GrammarParser.VOID, 0) != null) return Type.VOID;
 		return null;
 	}
 
