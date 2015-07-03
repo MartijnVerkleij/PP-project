@@ -35,7 +35,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 	public File generate(ParseTree tree) {
 		this.symbolTable = new SymbolTable();
 		this.labels = new HashMap<>();
-		this.lineNum = 1;
+		this.lineNum = 0;
 		this.labelID = 0;
 		this.endProgLabel = getNewLabelID();
 		File temp = new File("temp.hs");
