@@ -28,56 +28,56 @@ public class Tests {
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
-		try {
-			runChecker("syntax1");
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		try {
-			runChecker("syntax2");
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		try {
-			runChecker("syntax3");
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		try {
-			runChecker("syntax4");
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			runChecker("syntax1");
+//		} catch (ParseException e) {
+//			e.printStackTrace();
+//		}
+//		try {
+//			runChecker("syntax2");
+//		} catch (ParseException e) {
+//			e.printStackTrace();
+//		}
+//		try {
+//			runChecker("syntax3");
+//		} catch (ParseException e) {
+//			e.printStackTrace();
+//		}
+//		try {
+//			runChecker("syntax4");
+//		} catch (ParseException e) {
+//			e.printStackTrace();
+//		}
 	}
 
-	@Test
-	public void testContext() {
-		try {
-			runChecker("context0");
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		try {
-			runChecker("context1");
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		try {
-			runChecker("context2");
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		try {
-			runChecker("context3");
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		try {
-			runChecker("context4");
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-	}
+//	@Test
+//	public void testContext() {
+//		try {
+//			runChecker("context0");
+//		} catch (ParseException e) {
+//			e.printStackTrace();
+//		}
+//		try {
+//			runChecker("context1");
+//		} catch (ParseException e) {
+//			e.printStackTrace();
+//		}
+//		try {
+//			runChecker("context2");
+//		} catch (ParseException e) {
+//			e.printStackTrace();
+//		}
+//		try {
+//			runChecker("context3");
+//		} catch (ParseException e) {
+//			e.printStackTrace();
+//		}
+//		try {
+//			runChecker("context4");
+//		} catch (ParseException e) {
+//			e.printStackTrace();
+//		}
+//	}
 
 	@Test
 	public void testSemantic() {

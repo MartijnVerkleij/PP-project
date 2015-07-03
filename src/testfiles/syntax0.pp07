@@ -4,12 +4,14 @@ global int y;
 global bool x = false;
 
 void init() {
-	integer = 100;
+	y = 100;
 }
 
 int getY() {
 	while (locked lock0) {}
-	return y;
+	int z = y;
+	unlock lock0;
+	return z;
 }
 
 void setStuff(int number) {
@@ -18,14 +20,14 @@ void setStuff(int number) {
 	if (x) {
 		x = !x;
 	} else {
-		x = x || true;
+		x = x || (true);
 	}
 	unlock lock0;
 }
 
-int setAndGet(int number) {
-	setStuff(number);
-	return getY();
+int setAndGet(int num) {
+	setStuff(num);
+	return 1; //getY();
 }
 
 void doALot(int i, int j, int k) {
@@ -34,20 +36,20 @@ void doALot(int i, int j, int k) {
 	setStuff(k);
 }
 
-INT doLess() {
+INT doMore() {
 	iNt i = y;
 	setStuff(1);
 	setStuff(2);
 	setStuff(3);
-	i = setAndGet();
-	return i();
+	i = setAndGet(4);
+	return i;
 }
 
 void main() {
 	init();
 	int a = 0;
 	bool b = x;
-	a = getY();
+//	a = getY();
 	setStuff(82398);
 	b = x;
 	a = a + setAndGet(50);

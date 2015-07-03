@@ -4,7 +4,7 @@ global int y;
 global bool x = false;
 
 void init() {
-	integer = 100;
+	y = 100;
 }
 
 int getY() {
@@ -18,7 +18,7 @@ void setStuff(int number) {
 	if (x) {
 		x = !x;
 	} else {
-		x = x || true;
+		(x == x) || (true);
 	}
 	unlock lock0;
 }
@@ -34,7 +34,7 @@ void doALot(int i, int j, int k) {
 	setStuff(k);
 }
 
-INT doLess() {
+INT doMore() {
 	iNt i = y;
 	setStuff(1);
 	setStuff(2);
