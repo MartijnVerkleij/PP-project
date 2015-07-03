@@ -219,6 +219,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 	@Override
 	public Op visitExprStat(@NotNull GrammarParser.ExprStatContext ctx) {
 		visit(ctx.expr());
+		emit(OpCode.Pop, Indexes.Zero.toString());
 		return null;
 	}
 

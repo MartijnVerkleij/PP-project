@@ -44,7 +44,7 @@ public class PP07Checker extends GrammarBaseListener {
 	private Runs runs;
 
 
-	public Result check(ParseTree tree) throws ParseException {
+	public List<String> check(ParseTree tree) throws ParseException {
 		PP07PrepWalker walker = new PP07PrepWalker();
 		walker.walk(tree);
 		this.result = new Result();
@@ -58,7 +58,7 @@ public class PP07Checker extends GrammarBaseListener {
 			errors.forEach(System.err::println);
 			throw new ParseException(getErrors());
 		}
-		return this.result;
+		return this.errors;
 	}
 
 	@Override
