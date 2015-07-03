@@ -35,7 +35,7 @@ void doALot(int i, int j, int k) {
 }
 
 INT doMore() {
-	iNt i = y;
+	iNt i = x;
 	setStuff(1);
 	setStuff(2);
 	setStuff(3);

@@ -29,7 +29,7 @@ int setAndGet(int num) {
 }
 
 void doALot(int i, int j, int k) {
-	setStuff(i);
+	setstuff(i);
 	setStuff(j);
 	setStuff(k);
 }

@@ -50,7 +50,7 @@ void main() {
 	a = getY();
 	setStuff(82398);
 	b = x;
-	a = a + setAndGet(50);
+	a = a ++ setAndGet(50);
 	run t0 (doALot, 10, 20, 30);
 	run t1 (doMore);
 	run t2 (doALot, 0, 15, 45);

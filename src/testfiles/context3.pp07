@@ -15,7 +15,7 @@ int getY() {
 void setStuff(int number) {
 	lock lock0;
 	y = number;
-	if (x) {
+	if (y) {
 		x = !x;
 	} else {
 		x = x || (true);

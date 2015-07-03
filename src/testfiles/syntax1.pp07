@@ -1,7 +1,7 @@
 // Concurrent Banking Application
 
 global int y;
-global bool x = false;
+global bol x = false;
 
 void init() {
 	y = 100;
