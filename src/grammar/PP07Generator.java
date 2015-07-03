@@ -8,7 +8,8 @@ import sprockell.OpCode;
 import sprockell.Register.Indexes;
 
 import java.io.*;
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /* CORE ARP
 return value			-- global
@@ -25,16 +26,14 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 	private final Type type = Type.VOID;
 	private BufferedWriter writer;
 	private BufferedReader reader;
-	private Result checkResult;
 	private SymbolTable symbolTable;
-	private ArrayList<Label> labels;
+	private Map<String, Label> labels;
 	private int lineNum;
 	private int labelID = 0;
 
 	public File generate(ParseTree tree, Result checkResult) {
-		this.checkResult = checkResult;
 		this.symbolTable = new SymbolTable();
-		this.labels = new ArrayList<>();
+		this.labels = new HashMap<>();
 		this.lineNum = 0;
 		File file = new File("program.hs");
 		try {
@@ -58,8 +57,11 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 	}
 
 
-	private void generateLabels() {
+	private void generateLabels() throws IOException {
+		String line = null;
+		while ((line = reader.readLine()) != null) {
 
+		}
 	}
 
 	private void generateHeader() {
@@ -417,7 +419,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 			operands += string + " ";
 		}
 		if (label != null) {
-			labels.add(new Label(label, lineNum));
+			labels.put(label, new Label(label, lineNum));
 		}
 		lineNum++;
 		try {
@@ -428,7 +430,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		}
 	}
 
-	private int getNewLabelID() {
-		return labelID++;
+	private String getNewLabelID() {
+		return "#temp#" + labelID++;
 	}
 }

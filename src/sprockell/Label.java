@@ -11,16 +11,12 @@ public class Label {
 		this.lineNumber = line;
 	}
 
-	public Label(String name) {
-		this.name = name;
-	}
-
 	public void addLineNum(int lineNumber) {
 		try {
 			if (this.lineNumber == null) {
 				this.lineNumber = lineNumber;
 			} else {
-				throw new CompileException("Line number was already declared");
+				throw new CompileException("Line number '" + lineNumber + "' was already declared");
 			}
 		} catch (CompileException e) {
 			e.printStackTrace();
