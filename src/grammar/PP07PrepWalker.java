@@ -12,6 +12,12 @@ import grammar.GrammarParser.UnlockStatContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+/**
+ * Walker that walks the second iteration of the tree. 
+ * It is required for proper run declaration checking.
+ * @author tim, martijn
+ *
+ */
 public class PP07PrepWalker extends GrammarBaseListener {
 
 	private Functions functions = new Functions();
@@ -19,6 +25,11 @@ public class PP07PrepWalker extends GrammarBaseListener {
 	private Runs runs = new Runs();
 	private List<String> errors = new ArrayList<String>();
 	
+	/**
+	 * Walk the whole tree to look for run calls. Passes on 
+	 * functions and locks to the PP07Checker.
+	 * @param tree
+	 */
 	public void walk(ParseTree tree) {
 		PP07FunctionWalker walker = new PP07FunctionWalker();
 		walker.walk(tree);
@@ -28,24 +39,33 @@ public class PP07PrepWalker extends GrammarBaseListener {
 		new ParseTreeWalker().walk(this, tree);
 	}
 	
+	/**
+	 * Getter for Functions
+	 * @return
+	 */
 	public Functions getFunctions() {
 		return functions;
 	}
 	
+	/**
+	 * Getter for Locks
+	 * @return
+	 */
 	public Locks getLocks() {
 		return locks;
 	}
 	
+	/**
+	 * Getter for runs
+	 * @return
+	 */
 	public Runs getRuns() {
 		return runs;
 	}
 	
-	@Override
-	public void exitFuncStat(FuncStatContext ctx) {
-		//logic in pp07FunctionWalker
-	}
-	
-	
+	/**
+	 * Checks run statements for argument count and adds them to the Runs list.
+	 */
 	@Override
 	public void exitRunStat(RunStatContext ctx) {
 		if (!runs.addRun(ctx.ID(0).getText(), functions.getFunction(ctx.ID(1).getText()).getReturntype())) {
@@ -53,6 +73,12 @@ public class PP07PrepWalker extends GrammarBaseListener {
 		}
 	}
 	
+	/**
+	 * Gets the type of type nodes. These do not have an enter- or exit method,
+	 * so they are defined here.
+	 * @param ctx context of the ttype node we want to know the Type of.
+	 * @return Type that was found, or null if none was found.
+	 */
 	public Type getType(TypeContext ctx) {
 		if (ctx.getToken(GrammarParser.BOOL, 0) != null) return Type.BOOL;
 		if (ctx.getToken(GrammarParser.INT, 0) != null) return Type.INT;
@@ -60,6 +86,10 @@ public class PP07PrepWalker extends GrammarBaseListener {
 		return null;
 	}
 	
+	/**
+	 * Adds an error to the list of errors.
+	 * @param string
+	 */
 	private void addError(String string) {
 		errors.add(string);
 	}

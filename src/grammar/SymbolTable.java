@@ -33,6 +33,11 @@ public class SymbolTable {
 		arps.push(totalsize);
 	}
 
+	/**
+	 * Open a new scope with a given size. Used in the generator 
+	 * phase of the compiler.
+	 * @param parameterLength length in words of the parameters.
+	 */
 	public void openScope(int parameterLength /*in words*/) {
 		types.push(new HashMap<>());
 		offsets.push(new HashMap<>());

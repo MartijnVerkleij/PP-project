@@ -7,7 +7,7 @@ import Sprockell.System
     They will all be succeed, but the order in which this happens is undefined.
 -}
 
-loopCount = 10
+loopCount = 1
 
 prog :: [Instruction]
 prog = [

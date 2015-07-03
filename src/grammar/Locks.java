@@ -5,19 +5,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * List of Lock objects to keep track of declared locks.
+ * @author tim, martijn
+ * 
+ */
+
 public class Locks {
 
 	Map<String, Lock> locks = new HashMap<String, Lock>();
 	
-//	public boolean registerLock(String id) {
-//		if (locks.containsKey(id)) {
-//			return false;
-//		} else {
-//			locks.put(id, new Lock());
-//			return true;
-//		}
-//	}
-//	
 	/**
 	 * Attempts to acquire the lock on the lock with a given ID.
 	 * A new lock will be created if it did not exist already.
