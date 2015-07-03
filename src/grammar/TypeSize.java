@@ -9,11 +9,11 @@ import java.util.List;
  * PP07 data type sizes.
  */
 public class TypeSize {
+	public static final int WORD = 4;
 	private static final int INT = 4;
 	private static final int BOOL = 1;
 	private static final int VOID = 0;
 	private static final int CHAR = 1;
-
 	private static final List<Type> baseTypes = Arrays.asList(Type.BOOL, Type.CHAR, Type.INT);
 
 	private static int getEnum(int length) {
