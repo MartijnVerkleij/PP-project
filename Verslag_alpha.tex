@@ -7,6 +7,7 @@
 \usepackage{wrapfig}
 \usepackage{amsthm}
 \usepackage{float} \floatstyle{boxed} \restylefloat{figure}
+\usepackage[toc,page]{appendix}
 \author{Martijn Verkleij (s1466895) and Tim Kerkhoven (s1375253)}
 \title{Report PP07}
 \begin{document}
@@ -17,7 +18,11 @@
 
 
 \chapter{Features}
-PP07 is a programming language written for execution on the Sprockell simulator. It was written as a Turing-complete language that supports basic operations, if and else and while. It is further projected to support functions, concurrent execution with futures and enumerations. The language uses call-by-value to resolve variables. A more elaborate list of all supported operations can be found in chapter \ref{chp:langdesc}.   
+PP07 is a programming language written for execution on the Sprockell simulator. It was written as a Turing-complete language that supports basic arithmetic operations, if and else and while. Planned was support for functions, concurrent execution with futures and enumerations. The language uses call-by-value to resolve variables. A more elaborate list of all supported operations can be found in chapter \ref{chp:langdesc}. The language is case-insensitive on syntax, names of functions are however case-sensitive.
+
+\chapter{Problems and solutions}
+
+
 
 \chapter{Language description} \label{chp:langdesc}
 
@@ -68,21 +73,90 @@ Since \texttt{main} is in fact a function itself, it looks very similar, except 
 A variable can be declared with scope-awareness.
 \begin{description}
 	\item[Syntax:] 
-		int \textless variablename \textgreater [= \textless expression \textgreater];
+		\textless type \textgreater ~\textless variablename \textgreater ~[= \textless expression \textgreater];
 	\item[Example:] 
-		int i;
-		int i = 5; 
+		int i; ~~~ 
+		int i = 5;  ~~~ 
 		int i = 5 * j + 6;
 \end{description} 
 
 
+\subsubsection*{Variable assignment}
+A variable can be assigned a value with a similar syntax as before.
+\begin{description}
+	\item[Syntax:] 
+		\textless variablename\textgreater ~= \textless expression \textgreater;
+	\item[Example:] 
+		i = 5; ~~~ 
+		i = 5 * j + 6;
+\end{description} 
+
+\subsection{Control flow statements}
+
+\subsubsection*{If and else}
+The first of the basic control flow statements is the if-statement. The code  The if-statement is extended with the else-statement.
+
+\begin{description}
+	\item[Syntax:] 
+		if (\textless expression\textgreater ) \textless block\textgreater ~ [else \textless block\textgreater ];
+	\item[Example:] 
+		if (true) \{ \ldots \} ~~~
+		if (i \textless ~a) \{ i = a; \} else \{ a = i; \}
+\end{description} 
 
 
-\subsection{Functions}
+\subsubsection*{While}
+The while statement is the second basic control flow statement. It evaluates the expression, and executes the statements in the block if the expression is true.
+
+\begin{description}
+	\item[Syntax:] 
+		while (\textless expression\textgreater ) \textless block\textgreater
+	\item[Example:] 
+		if (true) \{ \ldots \} ~~~
+		if (i \textless ~a) \{ i = a; \} else \{ a = i; \}
+\end{description} 
+
+
+\subsection{Block}
+A block statement is a statement, and can therefore be made wherever. It opens a new scope. It is used in the control flow statements.
+
+\begin{description}
+	\item[Syntax:] 
+		\{ \textless statement\textgreater * \}
+	\item[Example:] 
+		\{ int i = 5; j = 6; \}
+\end{description} 
+
+\subsection{Expression}
+An expression in itself is also a statement. This may be illogical, but a function call (which was planned in our language, see subsection \ref{subsec:functions}) is an expression.
+
+\begin{description}
+	\item[Syntax:] 
+		\textless statement\textgreater
+	\item[Example:] 
+		\{ 2 + 3; ~~~ function(); \}
+\end{description} 
+
+\subsection{Functions} \label{subsec:functions}
 \subsubsection{Function Definition}
+A function definition is a statement. It will not be executed by default, it will only be executed if the code does a parallel or sequential function call. It has a number of arguments, and has a return type, where void defines the absence of a meaningful return 
+type.
 
-\subsubsection{Parallel function call}
-In a parallel function call the caller must set up some things before the function can be executed. An activation record (Section \ref{fig:actrecord}) must be made. 
+\begin{description}
+	\item[Syntax:] 
+		\textless type\textgreater ~\textless ID\textgreater ~( [ \textless type\textgreater ~\textless argname\textgreater ~[ , \textless type\textgreater ~\textless argname\textgreater ~]* ] ) \textless block\textgreater
+	\item[Example:] 
+		int function(int a, int b, int c) \{ \ldots \} ~~~
+		void doSomething() \{ \ldots \}
+\end{description} 
+
+
+
+\subsubsection{Sequential function call}
+A function can be called in sequence. This adds a new activation record, and pushes it to the activation record stack. It will then set the PC and start execution. The function itself is then responsible for adding the return value to the stack and removing the activation record, after which it returns the PC to the value of the return pointer.
+
+
+In a sequential function call the caller must set up some things before the function can be executed. An activation record (Section \ref{fig:actrecord}) must be made. 
 
 \paragraph{Pre-call}
 \begin{verbatim}
@@ -204,6 +278,255 @@ Global variables are declared at the end of memory, to avoid collision with the 
 
 
 \chapter{Software description}
+
+\begin{appendices}
+
+\chapter{Grammar}
+
+\begin{verbatim}
+
+grammar Grammar;
+
+//@header{package grammar;}
+
+// Program consists of one or more statements
+program	: stat+;
+
+/* Statements
+* 	declStat	- Declaration and Optional Assignment
+*		Declare statement, declare a (optionally global) variable and optionally assign an expression to it
+*	assStat		- Assignment
+*		Assign statement, assign an expression to a variable
+*	enumStat	- Enumeration Declaration
+*		Enumeration statement, declare an (optionally global) enumeration, and assign values to it. Assignment must
+*		occur in this phase
+*	ifStat		- If
+*		If statement, with expression between parentheses followed by a statement and optionally 'else' and another
+*		statement
+*	whileStat	- While
+*		While statement, with expression between parentheses followed by a statement
+*	blockStat	- Block
+*		Block statement, see 'block'
+*	funcStat	- Function Declaration
+*		Function declaration, consisting of a type, id, parameters and a block statement
+*	exprStat	- Expression
+*		Expression statement, an expression can be a statement, e.g. a function call
+*	runStat		- Run
+*		Run statement, which creates a new thread that executes a function defined in the call to run, parameters to
+*		this function are also passed along at this stage as expressions
+*	lockStat	- Lock
+*		Looks up a lock in memory, if it's zero, set it to one and continue, if it's one, try again. This effectively
+*		"locks" the lock
+*	unlockStat	- Unlock
+*		Set a lock in memory to zero, effectively "unlocking" the lock
+*	returnStat	- Return
+*		Return statement, sets return value of the function. Must be located at top-level of the function scope
+*/
+stat	: GLOBAL? type ID (ASS expr)? SEMI							#declStat
+		| ID ASS expr SEMI 											#assStat
+		| ENUM ID ASS LBRACE EID (COMMA EID)* RBRACE SEMI			#enumStat
+		| IF LPAR expr RPAR block (ELSE block)?						#ifStat
+		| WHILE LPAR expr RPAR block								#whileStat
+		| block														#blockStat
+		| type ID LPAR (type ID (COMMA type ID)*)? RPAR block		#funcStat
+		| expr SEMI													#exprStat
+		| RUN ID LPAR (ID (COMMA expr)*) RPAR SEMI					#runStat
+		| LOCK ID SEMI												#lockStat
+		| UNLOCK ID SEMI											#unlockStat
+		| RETURN expr SEMI											#returnStat
+		;
+
+/*	Block Statement
+*		Contains zero or more statements between two braces
+*/
+block 	: LBRACE stat* RBRACE
+		;
+
+/* TypeSize
+*	INT
+*		Integer type
+*	BOOL
+*		Boolean type
+*	VOID
+*		Empty type
+*/
+type	: INT														#intType
+		| BOOL														#boolType
+		| VOID														#voidType
+		;
+
+/* Expressions
+*	funcCall 	- Function Call Expression
+*		Call a function
+*	joinExpr	- Join Expression
+*		After new a thread is created with 'run', it's return value can be obtained using 'join'. Note that this will
+*		block the current thread if there is either no return value (call to void function) or the thread has not not
+*		finished its execution yet. The former will block indefinately, the latter will block until the return value of
+*		the thread is set
+*	lockedExpr	- Locked Expression
+*		Checks if a lock is 'locked', returns a boolean. See 'lock' and 'unlock'.
+*	plusExpr	- Addition Expression
+*		Addition and subtraction
+*	multExpr	- Multiplication Expression
+*		Multiplication and integer division
+*	expExpr		- Exponent Expression
+*		Exponentiation b^n. Where b is any integer and n is any non-negative integer
+*	boolExpr	- Boolean Expression
+*		And and or operations
+*	cmpExpr		- Comparison Expression
+*		Comparison operations
+*	prfExpr		- Prefix Expression
+*		Negate and not operations
+*	parExpr		- Parentheses Expression
+*		Parentheses
+*	idExpr		- ID Expression
+*		An ID
+*	numExpr		- Number Expression
+*		A number
+*	eidExpr		- Enumeration ID Expression
+*		An enum ID
+*	trueExpr	- True Expression
+*		True
+*	falseExpr	- False Expression
+*		False
+*/
+expr	: ID LPAR (expr (COMMA expr)*)? RPAR						#funcCall
+		| JOIN ID													#joinExpr
+		| LOCKED ID													#lockedExpr
+		| expr plusOp expr											#plusExpr
+		| expr multOp expr											#multExpr
+		| expr expOp expr											#expExpr
+		| expr boolOp expr											#boolExpr
+		| expr cmpOp expr											#cmpExpr
+		| prfOp expr												#prfExpr
+		| LPAR expr RPAR 											#parExpr
+		| ID														#idExpr
+		| NUM														#numExpr
+		| EID														#eidExpr
+		| TRUE														#trueExpr
+		| FALSE														#falseExpr
+		;
+
+// Operators
+plusOp	: PLUS | MINUS; 				// + and -
+multOp	: STAR | SLASH;					// * and /
+expOp	: CARET;						// ^
+boolOp	: AND | OR;						// AND and OR
+cmpOp	: EQ | GT | GE | LT | LE | NE;	// ==, >, >=, <, <= and !=
+prfOp	: MINUS | NOT;					// - and !
+
+// Keywords
+INT: 	I N T;
+BOOL: 	B O O L;
+VOID:	V O I D;
+ENUM: 	E N U M;
+
+GLOBAL: G L O B A L;
+IF: 	I F;
+ELSE: 	E L S E;
+WHILE: 	W H I L E;
+RUN:	R U N;
+JOIN:	J O I N;
+LOCK:	L O C K;
+UNLOCK:	U N L O C K;
+LOCKED:	L O C K E D;
+RETURN: R E T U R N;
+TRUE:	T R U E;
+FALSE:	F A L S E;
+
+// Symbols
+ASS: 	'=';
+
+EQ: 	'==';
+GT: 	'>';
+GE: 	'>=';
+LT:     '<';
+LE:     '<=';
+NE:     '!=';
+
+AND:	'&&';
+OR:		'||';
+NOT:	'!';
+
+LBRACE: '{';
+RBRACE: '}';
+LPAR:   '(';
+RPAR:   ')';
+LBRACK:	'[';
+RBRACK:	']';
+
+SEMI:   ';';
+DQUOTE: '"';
+SQUOTE: '\'';
+COLON:  ':';
+COMMA:  ',';
+DOT:    '.';
+AMP:	'&';
+UND:	'_';
+
+PLUS:   '+';
+MINUS:  '-';
+SLASH:  '/';
+STAR:   '*';
+CARET:	'^';
+
+/* IDs, numbers and strings
+*	ID
+*		Starts with a lowercase letter, followed by zero or more letters, underscores and digits
+*	EID
+*		Starts with an uppercase letter, followed by zero or more letters, underscores and digits
+*	NUM
+*		Consists of one or more digits
+*	STR
+*		Consists of any characters between two double quotes
+*/
+ID: 	LCASEL (LETTER | UND | DIGIT)*;
+EID:	UCASEL (UCASEL | UND | DIGIT)*;
+NUM:	DIGIT+;
+STR: 	DQUOTE .*? DQUOTE;
+
+// Fragments
+fragment LETTER: [a-zA-Z]; 	// Any letter
+fragment UCASEL: [A-Z];		// Any uppercase letter
+fragment LCASEL: [a-z];		// Any lowercase letter
+fragment DIGIT: [0-9];		// Any digit
+
+// Below are all letters in either upper or lower case, these are used to define keywords.
+fragment A: [aA];
+fragment B: [bB];
+fragment C: [cC];
+fragment D: [dD];
+fragment E: [eE];
+fragment F: [fF];
+fragment G: [gG];
+fragment H: [hH];
+fragment I: [iI];
+fragment J: [jJ];
+fragment K: [kK];
+fragment L: [lL];
+fragment M: [mM];
+fragment N: [nN];
+fragment O: [oO];
+fragment P: [pP];
+fragment Q: [qQ];
+fragment R: [rR];
+fragment S: [sS];
+fragment T: [tT];
+fragment U: [uU];
+fragment V: [vV];
+fragment W: [wW];
+fragment X: [xX];
+fragment Y: [yY];
+fragment Z: [zZ];
+
+// Skip comments (line and block) and whitespace
+COMMENT: (('/*'.*? '*/')|('//' .*? '\n')) -> skip;
+WS: [ \t\r\n]+ -> skip;
+
+
+\end{verbatim}
+
+\end{appendices}
 
 
 \end{document}
