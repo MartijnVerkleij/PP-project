@@ -20,10 +20,17 @@
 
 
 \chapter{Features}
-PP07 is a programming language written for execution on the Sprockell simulator. It was written as a Turing-complete language that supports basic arithmetic operations, if and else and while. Planned was support for functions, concurrent execution with futures and enumerations. The language uses call-by-value to resolve variables. A more elaborate list of all supported operations can be found in chapter \ref{chp:langdesc}. The language is case-insensitive on syntax, names of functions are however case-sensitive. -- supports int boolean 
+PP07 is a programming language written for execution on the Sprockell simulator. It was written as a Turing-complete language that supports basic arithmetic operations, if and else and while. Planned was support for functions, concurrent execution with futures and enumerations. Variable types supported are integer and boolean. A more elaborate list of all supported operations can be found in chapter \ref{chp:langdesc}. The language is case-insensitive on syntax, names of functions are however case-sensitive. 
 
 \chapter{Problems and solutions}
+\section{Checker versus Generator}
+During the project it was found out that delivering all the features that were defined in the language was difficult to achieve. Later on restrictions in time forced extra features like functions and enumerations out of the window. This means that the checker phase comprises features that the generator cannot transcode. Tests are despite these shortcomings also written for many uncompilable features.
 
+\section{Absence of concurrency}
+The planned form of concurrency implementation consisted of parallelising functions, which one could join on, and implementing simple semaphore-like reentrant locks. Due to letting go of the functions functionality, concurrency fell off of its basis, which meant implementing it had to be done via an entirely new model like fork-join or simply splitting the different parts up. This proved, with respect to the little time left, impossible to implement without losing absolutely mandatory aspects of the project.
+
+\section{Function Calls and Definitions}
+In the checking phase, a control flow graph was constructed in the checker phase. This was done with context objects, which were connected together like seen in the practical exercises. During implementation a function call above the declaration of its associated function was unable to set its context, since it relied on the function context to be set, which was only possible if the function had been visited already. First the context setting of functions was delegated to the PrepWalker to try and counter this. This however proved to be impossible, since the objects were gone by the time they were read by the next walk. No solution was found for this problem, which led to the restriction that a given function call must occur after its declaration. This means functions cannot call each other.
 
 
 \chapter{Language description} \label{chp:langdesc}
@@ -31,7 +38,7 @@ PP07 is a programming language written for execution on the Sprockell simulator.
 \section{Program Structure} \label{sec:structure}
 
 \begin{quote}
-	Note: Since functions were not implemented in the generator, this section contains info that was not completed, or maybe even poorly thought out. It is included for context.
+	Note: Since functions were not implemented in the generator, this section contains info that was not completed, or maybe even poorly thought out. It is included for context. 
 \end{quote}
 
 In this section the structure of the compiled code is discussed. In the next sections the individual language constructs are discussed. 
@@ -400,31 +407,11 @@ Sprockell has various levels of memory, namely in the form of registers, local m
 Registers do not have a general model outside of the special registers used by the Sprockell itself. This means they can be used freely by the specific operations during compile time.
 
 \subsection{Local memory}
-Local memory is meant to store thread-specific data in. It will be used to store activation records. 
-
-\label{fig:actrecord}
-Activation Record
- 
-\begin{tabular}{| l | l |}
-\hline
-	ARP
-		& Pointer to the caller's activation record on the stack \\	
-
-	Return Address
-		& Instruction to jump to after the function finishes \\
-	
-	Caller's ARP 	
-		& \\
-	
-	Parameters 
-		& All parameters given as arguments to this function. \\
-	
-	Variables 
-		& All variables inherited and all declared variables \\	
-\hline
-\end{tabular}
+Local memory is currently only used to store the stack in. The stack stores expression results, which are recursively evaluated.
 
 \subsection{Global memory}
+Global memory stores all variables (since by the absence of functions they are all globally accessible).
+
 Global memory has a more elaborate structure, since it stores not only data shared between threads, it also needs records to control threads' behaviour. Information about how and why these records are used can be found in section \ref{sec:structure}. 
 
 \subsubsection{Thread control records}
@@ -566,6 +553,16 @@ The semantic tests have to be performed manually, each test will either print a 
 All tests show the expected results, and are therefore passed.
 
 \chapter{Conclusion}
+\section{Language}
+The language is very limited in what it can do, but implements the most basic of structures, making it Turing-complete (at least). We made it extendable to include functions, which would increase the power of the language, since concurrent execution would not be much of a problem any more. The language shares a lot of syntactic elements with Java and C, which makes it seem more powerful than it is. It however simplified making test programs, which was helpful. 
+
+\section{Project}
+The project was a quite stressful one. We wasted a lot of time in the few days after the language definition, which delayed implementation of functionality and made us have to sacrifice functionality. The project was challenging, we simply did not grasp the size of the project enough. Visualising all the work was hard. 
+\section{Module}
+We found the module quite packed and stressfull. The subjects costed a lot of time. We were, even while putting in a lot of time, quite on the slow end of the exercises, making catching up hard. This also had its effect on Concurrent Programming, where the lack of incentive left it in the dust. This was not helped by the fact that missing one of the sessions was okay, which was not communicated well. 
+
+
+
 
 \begin{appendices}
 

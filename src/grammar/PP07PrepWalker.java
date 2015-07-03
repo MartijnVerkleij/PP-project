@@ -88,7 +88,7 @@ public class PP07PrepWalker extends GrammarBaseListener {
 	public Type getType(TypeContext ctx) {
 		if (ctx.getToken(GrammarParser.BOOL, 0) != null) return Type.BOOL;
 		if (ctx.getToken(GrammarParser.INT, 0) != null) return Type.INT;
-		if (ctx.getToken(GrammarParser.INT, 0) != null) return Type.VOID;
+		if (ctx.getToken(GrammarParser.VOID, 0) != null) return Type.VOID;
 		return null;
 	}
 	
