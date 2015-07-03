@@ -62,8 +62,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		String line;
 		String edited = null;
 		while ((line = reader.readLine()) != null) {
-			edited = line.replaceAll("#temp#(.*?)#temp#", labels.get(line.substring(line.indexOf("#temp#")
-					+ "#temp#".length(), line.lastIndexOf("#temp#"))).getLine());
+			edited = line.replaceAll("#temp#(.*?)#temp#", labels.get(line.substring(line.indexOf("#temp#") + 6, line.lastIndexOf("#temp#"))).getLine());
 			writer.write(edited);
 		}
 	}
