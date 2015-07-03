@@ -86,7 +86,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		for (String s : header) {
 			writer.write(s);
 			writer.newLine();
-			lineNum++;
+//			lineNum++;
 		}
 	}
 
