@@ -91,6 +91,9 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 
 	private void generateFooter() throws IOException {
 		String[] footer = new String[]{
+				"\t Read (Addr 0) ,",
+				"\t Receive RegA ,",
+				"\t Write RegA (Addr 0x1000000) ,",
 				"\tEndProg",
 				"\t]",
 				"main = run 1 prog"
