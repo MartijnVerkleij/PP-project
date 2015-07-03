@@ -23,7 +23,7 @@ public class Label {
 		}
 	}
 
-	public String toIR() {
-		return "#temp#" + name;
+	public String getLine() {
+		return lineNumber.toString();
 	}
 }

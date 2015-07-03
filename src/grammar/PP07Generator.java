@@ -43,11 +43,12 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 			generateHeader();
 			tree.accept(this);
 			writer.flush();
-			writer.close();
 			FileReader fr = new FileReader(file);
 			reader = new BufferedReader(fr);
 			generateLabels();
 			reader.close();
+			writer.flush();
+			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -58,9 +59,12 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 
 
 	private void generateLabels() throws IOException {
-		String line = null;
+		String line;
+		String edited = null;
 		while ((line = reader.readLine()) != null) {
-
+			edited = line.replaceAll("#temp#(.*?)#temp#", labels.get(line.substring(line.indexOf("#temp#")
+					+ "#temp#".length(), line.lastIndexOf("#temp#"))).getLine());
+			writer.write(edited);
 		}
 	}
 
@@ -120,7 +124,8 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		emit(OpCode.Pop, Indexes.RegA.toString()); // value to compare
 
 		emit(OpCode.Const, "0", Indexes.RegB.toString()); // constant reg with 0
-		emit(OpCode.Compute, "Equal", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString()); // compare
+		emit(OpCode.Compute, "Equal", Indexes.RegA.toString(), Indexes.RegB.toString(),
+				Indexes.RegA.toString()); // compare
 
 		if (ctx.ELSE() != null) {
 			String endLabel = getNewLabelID() + "endif"; // label for jump to end
@@ -154,7 +159,8 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		visit(ctx.expr()); // evaluate expression
 		emit(OpCode.Pop, Indexes.RegA.toString()); // value to compare
 		emit(OpCode.Const, "1", Indexes.RegB.toString()); // constant reg with 1
-		emit(OpCode.Compute, "Equal", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString()); // compare
+		emit(OpCode.Compute, "Equal", Indexes.RegA.toString(), Indexes.RegB.toString(),
+				Indexes.RegA.toString()); // compare
 		emit(OpCode.Branch, Indexes.RegA.toString(), beginLabel); // branch
 		return null;
 	}
@@ -289,11 +295,13 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 			emit(OpCode.Jump, checkLabel); // jump to check
 
 			// Content of while
-			emit(beginLabel, OpCode.Compute, "Mul", Indexes.RegA.toString(), Indexes.RegE.toString(), Indexes.RegE.toString());
+			emit(beginLabel, OpCode.Compute, "Mul", Indexes.RegA.toString(), Indexes.RegE.toString(),
+					Indexes.RegE.toString());
 			emit(OpCode.Compute, "Sub", Indexes.RegB.toString(), Indexes.RegC.toString(), Indexes.RegB.toString());
 
 			// Checking part
-			emit(checkLabel, OpCode.Compute, "GtE", Indexes.RegB.toString(), Indexes.RegC.toString(), Indexes.RegD.toString());
+			emit(checkLabel, OpCode.Compute, "GtE", Indexes.RegB.toString(), Indexes.RegC.toString(),
+					Indexes.RegD.toString());
 			emit(OpCode.Branch, Indexes.RegD.toString(), beginLabel);
 		}
 		emit(OpCode.Jump, endLabel);
@@ -431,6 +439,6 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 	}
 
 	private String getNewLabelID() {
-		return "#temp#" + labelID++;
+		return "#temp#" + labelID++ + "#temp#";
 	}
 }
