@@ -124,10 +124,10 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 
 		if (ctx.GLOBAL() == null) {
 			symbolTable.add(id, type);
-			emit(OpCode.Store, Indexes.RegA.toString(), "Addr " + (symbolTable.arp(id) + symbolTable.offset(id)));
+			emit(OpCode.Store, Indexes.RegA.toString(), "(Addr " + (symbolTable.arp(id) + symbolTable.offset(id)) + ")");
 		} else {
 			symbolTable.addGlobal(id, type);
-			emit(OpCode.Write, Indexes.RegA.toString(), "Addr " + symbolTable.offset(id));
+			emit(OpCode.Write, Indexes.RegA.toString(), "(Addr " + symbolTable.offset(id) + ")");
 		}
 		return null;
 	}
@@ -138,9 +138,9 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		visit(ctx.expr());
 		emit(OpCode.Pop, Indexes.RegA.toString());
 		if (symbolTable.isGlobal(id)) {
-			emit(OpCode.Write, Indexes.RegA.toString(), "Addr " + symbolTable.offset(id));
+			emit(OpCode.Write, Indexes.RegA.toString(), "(Addr " + symbolTable.offset(id) + ")");
 		} else {
-			emit(OpCode.Store, Indexes.RegA.toString(), "Addr " + (symbolTable.arp(id) + symbolTable.offset(id)));
+			emit(OpCode.Store, Indexes.RegA.toString(), "(Addr " + (symbolTable.arp(id) + symbolTable.offset(id)) + ")");
 		}
 		return null;
 	}
