@@ -1,0 +1,19 @@
+global int i = 1;
+global int r;
+{
+	bool b = false;
+	while (b == false) {
+		int j = 0;
+		while (j < 10) {
+			i = (i * j) / 2;
+			if (!b && (i > 10)) {
+				i = 5;
+			}
+		}
+		i = i / 10;
+		if (i <= 5) {
+			b = !b || b;
+		}
+	}
+	r = i ^ 3;
+}
