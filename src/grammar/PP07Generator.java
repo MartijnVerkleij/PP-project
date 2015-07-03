@@ -60,10 +60,13 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 
 	private void generateLabels() throws IOException {
 		String line;
-		String edited = null;
 		while ((line = reader.readLine()) != null) {
-			edited = line.replaceAll("#temp#(.*?)#temp#", labels.get(line.substring(line.indexOf("#temp#") + 6, line.lastIndexOf("#temp#"))).getLine());
-			writer.write(edited);
+			int first = line.indexOf("#temp#");
+			int second = line.lastIndexOf("#temp#") + 6;
+			if (first >= 0) {
+				line = line.replaceAll("#temp#(.*?)#temp#", labels.get(line.substring(first, second)).getLine());
+			}
+			writer.write(line);
 		}
 	}
 
