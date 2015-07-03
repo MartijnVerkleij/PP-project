@@ -63,6 +63,8 @@ A thread control loop looks as follows:
 All functions follow after the thread control loops. These are listed in order, and can be called by any thread, sequentially or in parallel. The two are distinct in that in the sequential case an activation record is added to the local stack, and in the parallel case a free Sprockell is selected to do the task, from which a result can be read with a join statement.
 
 \subsection{Main}
+The main function is executed on the first Sprockell. It wil run sequentially until the end. At the end it will kill all remaining Sprockells by directing them to an EndProg, after which it will end itself. The main function does not have a special syntax, other that it always has its return type set to void and is called main in lowercaps, with no arguments.
+
 
 
 Since \texttt{main} is in fact a function itself, it looks very similar, except for the fact that it is the only function called directly, not by any PP07-code. It also differs from the others since it has an EndProg statement at the end.
@@ -139,9 +141,14 @@ An expression in itself is also a statement. This may be illogical, but a functi
 		\{ 2 + 3; ~~~ function(); \}
 \end{description} 
 
+\section{Expressions}
+
+\subsection{Plus and minus}
+
 \subsection{Functions} \label{subsec:functions}
 \subsubsection{Function Definition}
-A function definition is a statement. It will not be executed by default, it will only be executed if the code does a parallel or sequential function call. It has a number of arguments and a return type, where void defines the absence of a return type.
+A function definition is a statement. It will not be executed by default, it will only be executed if the code does a parallel or sequential function call. It has a number of arguments, and has a return type, where void defines the absence of a meaningful return 
+type.
 
 \begin{description}
 	\item[Syntax:] 
