@@ -85,10 +85,10 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 
 		if (ctx.GLOBAL() == null) {
 			symbolTable.add(id, type);
-			emit(OpCode.Store, Indexes.RegA.toString(), symbolTable.offset(id).toString());
+			emit(OpCode.Store, Indexes.RegA.toString(), "Addr " + (symbolTable.arp(id) + symbolTable.offset(id)));
 		} else {
 			symbolTable.addGlobal(id, type);
-			emit(OpCode.Write, Indexes.RegA.toString(), symbolTable.offset(id).toString());
+			emit(OpCode.Write, Indexes.RegA.toString(), "Addr " + symbolTable.offset(id));
 		}
 		return null;
 	}
@@ -99,9 +99,9 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		visit(ctx.expr());
 		emit(OpCode.Pop, Indexes.RegA.toString());
 		if (symbolTable.isGlobal(id)) {
-			emit(OpCode.Write, Indexes.RegA.toString(), symbolTable.offset(id).toString());
+			emit(OpCode.Write, Indexes.RegA.toString(), "Addr " + symbolTable.offset(id));
 		} else {
-			emit(OpCode.Store, Indexes.RegA.toString(), symbolTable.offset(id).toString());
+			emit(OpCode.Store, Indexes.RegA.toString(), "Addr " + (symbolTable.arp(id) + symbolTable.offset(id)));
 		}
 		return null;
 	}
@@ -153,7 +153,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		emit(OpCode.Pop, Indexes.RegA.toString()); // value to compare
 		emit(OpCode.Const, "1", Indexes.RegB.toString()); // constant reg with 1
 		emit(OpCode.Compute, "Equal", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString()); // compare
-		emit(OpCode.Branch, Indexes.RegA.toString(), Indexes.RegB.toString(), beginLabel); // branch
+		emit(OpCode.Branch, Indexes.RegA.toString(), beginLabel); // branch
 		return null;
 	}
 
@@ -235,7 +235,11 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		visit(ctx.expr(1));
 		emit(OpCode.Pop, Indexes.RegA.toString());
 		emit(OpCode.Pop, Indexes.RegB.toString());
-		emit(OpCode.Compute, "Add", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString());
+		if (ctx.plusOp().PLUS() == null) {
+			emit(OpCode.Compute, "Sub", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString());
+		} else {
+			emit(OpCode.Compute, "Add", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString());
+		}
 		emit(OpCode.Push, Indexes.RegA.toString());
 		return null;
 	}
@@ -246,14 +250,157 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		visit(ctx.expr(1));
 		emit(OpCode.Pop, Indexes.RegA.toString());
 		emit(OpCode.Pop, Indexes.RegB.toString());
-		emit(OpCode.Compute, "Mul", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString());
+		if (ctx.multOp().STAR() == null) {
+			emit(OpCode.Compute, "Div", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString());
+		} else {
+			emit(OpCode.Compute, "Mul", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString());
+		}
 		emit(OpCode.Push, Indexes.RegA.toString());
 		return null;
 	}
 
 	@Override
 	public Op visitExpExpr(@NotNull GrammarParser.ExpExprContext ctx) {
-		return super.visitExpExpr(ctx);
+		// Labels
+		String zeroLabel = getNewLabelID() + "exp_with_zero";
+		String endLabel = getNewLabelID() + "end";
+
+		// Evaluating expressions
+		visit(ctx.expr(0));
+		visit(ctx.expr(1));
+		// Saving expressions to registers
+		emit(OpCode.Pop, Indexes.RegA.toString()); // value to multiply
+		emit(OpCode.Pop, Indexes.RegB.toString()); // times to multiply
+
+		// Checking for 0 in RegB
+		emit(OpCode.Compute, "Equal", Indexes.RegB.toString(), Indexes.Zero.toString(), Indexes.RegD.toString());
+		emit(OpCode.Branch, Indexes.RegD.toString(), zeroLabel);
+
+		// Continue if not zero
+		emit(OpCode.Const, "1", Indexes.RegC.toString()); // constant reg with 1, used for compare
+		emit(OpCode.Compute, "Add", Indexes.RegA.toString(), Indexes.Zero.toString(), Indexes.RegA.toString());
+		{ // Block to clarify, while loop in here
+			// More Labels
+			String beginLabel = getNewLabelID() + "beginwhile";
+			String checkLabel = getNewLabelID() + "checkwhile";
+
+			emit(OpCode.Jump, checkLabel); // jump to check
+
+			// Content of while
+			emit(beginLabel, OpCode.Compute, "Mul", Indexes.RegA.toString(), Indexes.RegE.toString(), Indexes.RegE.toString());
+			emit(OpCode.Compute, "Sub", Indexes.RegB.toString(), Indexes.RegC.toString(), Indexes.RegB.toString());
+
+			// Checking part
+			emit(checkLabel, OpCode.Compute, "GtE", Indexes.RegB.toString(), Indexes.RegC.toString(), Indexes.RegD.toString());
+			emit(OpCode.Branch, Indexes.RegD.toString(), beginLabel);
+		}
+		emit(OpCode.Jump, endLabel);
+
+		// Jump target if zero
+		emit(zeroLabel, OpCode.Const, "1", Indexes.RegE.toString()); // constant with 1, for returning
+
+		// End
+		emit(endLabel, OpCode.Push, Indexes.RegE.toString());
+
+		return null;
+	}
+
+	@Override
+	public Op visitBoolExpr(@NotNull GrammarParser.BoolExprContext ctx) {
+		visit(ctx.expr(0));
+		visit(ctx.expr(1));
+		emit(OpCode.Pop, Indexes.RegA.toString());
+		emit(OpCode.Pop, Indexes.RegB.toString());
+		if (ctx.boolOp().AND() == null) {
+			emit(OpCode.Compute, "Or", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString());
+		} else {
+			emit(OpCode.Compute, "And", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString());
+		}
+		emit(OpCode.Push, Indexes.RegA.toString());
+		return null;
+	}
+
+	@Override
+	public Op visitCmpExpr(@NotNull GrammarParser.CmpExprContext ctx) {
+		visit(ctx.expr(0));
+		visit(ctx.expr(1));
+		emit(OpCode.Pop, Indexes.RegA.toString());
+		emit(OpCode.Pop, Indexes.RegB.toString());
+		if (ctx.cmpOp().EQ() != null) {
+			emit(OpCode.Compute, "Equal", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString());
+		} else if (ctx.cmpOp().NE() != null) {
+			emit(OpCode.Compute, "NEq", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString());
+		} else if (ctx.cmpOp().GT() != null) {
+			emit(OpCode.Compute, "Gt", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString());
+		} else if (ctx.cmpOp().GE() != null) {
+			emit(OpCode.Compute, "GtE", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString());
+		} else if (ctx.cmpOp().LT() != null) {
+			emit(OpCode.Compute, "Lt", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString());
+		} else if (ctx.cmpOp().LE() != null) {
+			emit(OpCode.Compute, "LtE", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString());
+		}
+		emit(OpCode.Push, Indexes.RegA.toString());
+		return null;
+	}
+
+	@Override
+	public Op visitPrfExpr(@NotNull GrammarParser.PrfExprContext ctx) {
+		visit(ctx.expr());
+		emit(OpCode.Pop, Indexes.RegA.toString());
+		if (ctx.prfOp().MINUS() == null) {
+			emit(OpCode.Compute, "Sub", Indexes.Zero.toString(), Indexes.RegA.toString(), Indexes.RegA.toString());
+		} else {
+			emit(OpCode.Const, "1", Indexes.RegB.toString()); // constant reg with 1, used for XOR
+			emit(OpCode.Compute, "Xor", Indexes.RegA.toString(), Indexes.RegB.toString(), Indexes.RegA.toString());
+		}
+		emit(OpCode.Push, Indexes.RegA.toString());
+		return null;
+	}
+
+	@Override
+	public Op visitParExpr(@NotNull GrammarParser.ParExprContext ctx) {
+		visit(ctx.expr());
+		return null;
+	}
+
+	@Override
+	public Op visitIdExpr(@NotNull GrammarParser.IdExprContext ctx) {
+		String id = ctx.ID().getText();
+		if (symbolTable.isGlobal(id)) {
+			emit(OpCode.Read, "Addr " + symbolTable.offset(id));
+			emit(OpCode.Receive, Indexes.RegA.toString());
+		} else {
+			emit(OpCode.Load, "Addr " + (symbolTable.arp(id) + symbolTable.offset(id)), Indexes.RegA.toString());
+		}
+		emit(OpCode.Push, Indexes.RegA.toString());
+		return null;
+	}
+
+	@Override
+	public Op visitNumExpr(@NotNull GrammarParser.NumExprContext ctx) {
+		emit(OpCode.Const, ctx.NUM().getText(), Indexes.RegA.toString());
+		emit(OpCode.Push, Indexes.RegA.toString());
+		return null;
+	}
+
+	@Override
+	public Op visitEidExpr(@NotNull GrammarParser.EidExprContext ctx) {
+		// TODO: Not implemented
+		return null;
+	}
+
+	@Override
+	public Op visitTrueExpr(@NotNull GrammarParser.TrueExprContext ctx) {
+		emit(OpCode.Const, "1", Indexes.RegA.toString());
+		emit(OpCode.Push, Indexes.RegA.toString());
+		return null;
+	}
+
+	@Override
+	public Op visitFalseExpr(@NotNull GrammarParser.FalseExprContext ctx) {
+		emit(OpCode.Const, "0", Indexes.RegA.toString());
+		emit(OpCode.Push, Indexes.RegA.toString());
+		return null;
 	}
 
 	private void emit(Op op) {
