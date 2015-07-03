@@ -1,0 +1,11 @@
+global int j = 10;
+global int i = 5;
+
+while (j >= i) {
+	j = j + i;
+	i = i + 10;
+	if ((i > 1000000) || (j > 1000000)) {
+		i = 5;
+		j = 10;
+	}
+}
