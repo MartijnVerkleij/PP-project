@@ -11,7 +11,7 @@
 \usepackage{listings}
 \lstset{tabsize=4, numbers=left, numberstyle=\scriptsize}
 \author{Martijn Verkleij (s1466895) and Tim Kerkhoven (s1375253)}
-\title{Report PP07}
+\title{PP project: PP07}
 \begin{document}
 
 
@@ -20,7 +20,7 @@
 
 
 \chapter{Features}
-PP07 is a programming language written for execution on the Sprockell simulator. It was written as a Turing-complete language that supports basic arithmetic operations, if and else and while. Planned was support for functions, concurrent execution with futures and enumerations. The language uses call-by-value to resolve variables. A more elaborate list of all supported operations can be found in chapter \ref{chp:langdesc}. The language is case-insensitive on syntax, names of functions are however case-sensitive.
+PP07 is a programming language written for execution on the Sprockell simulator. It was written as a Turing-complete language that supports basic arithmetic operations, if and else and while. Planned was support for functions, concurrent execution with futures and enumerations. The language uses call-by-value to resolve variables. A more elaborate list of all supported operations can be found in chapter \ref{chp:langdesc}. The language is case-insensitive on syntax, names of functions are however case-sensitive. -- supports int boolean 
 
 \chapter{Problems and solutions}
 
@@ -71,11 +71,11 @@ The main function is executed on the first Sprockell. It wil run sequentially un
 Since \texttt{main} is in fact a function itself, it looks very similar, except for the fact that it is the only function called directly, not by any PP07-code. It also differs from the others since it has an EndProg statement at the end.
 
 \section{Statements}
+Statements are the elements which are executed in order to run the program.
 
 \subsection{Variables}
 
 \subsubsection*{Variable Declaration}
-A variable can be declared with scope-awareness.
 \begin{description}
 	\item[Syntax:] 
 		\textless type \textgreater ~\textless variablename \textgreater ~[= \textless expression \textgreater];
@@ -84,10 +84,10 @@ A variable can be declared with scope-awareness.
 		int i = 5;  ~~~ 
 		int i = 5 * j + 6;
 \end{description} 
-
+A variable can be declared with scope-awareness. A variable is declared in memory, and its value may or may not be assigned, depending on if a value to assign is given.
 
 \subsubsection*{Variable assignment}
-A variable can be assigned a value with a similar syntax as before.
+
 \begin{description}
 	\item[Syntax:] 
 		\textless variablename\textgreater ~= \textless expression \textgreater;
@@ -95,11 +95,11 @@ A variable can be assigned a value with a similar syntax as before.
 		i = 5; ~~~ 
 		i = 5 * j + 6;
 \end{description} 
+A variable can be assigned a value with a similar syntax as before. The resulting value is written to memory.
 
 \subsection{Control flow statements}
 
 \subsubsection*{If and else}
-The first of the basic control flow statements is the if-statement. The if-statement is extended with the else-statement.
 
 \begin{description}
 	\item[Syntax:] 
@@ -109,9 +109,10 @@ The first of the basic control flow statements is the if-statement. The if-state
 		if (i \textless ~a) \{ i = a; \} else \{ a = i; \}
 \end{description} 
 
+The first of the basic control flow statements is the if-statement. The if-statement is extended with the else-statement. If the condition holds, the content of the if-block is executed, otherwise, either the contents of the else statement are executed, or this statement finishes. This depends on whether an else-statement is provided.
+
 
 \subsubsection*{While}
-The while statement is the second basic control flow statement. It evaluates the expression, and executes the statements in the block if the expression is true.
 
 \begin{description}
 	\item[Syntax:] 
@@ -120,6 +121,7 @@ The while statement is the second basic control flow statement. It evaluates the
 		if (true) \{ \ldots \} ~~~
 		if (i \textless ~a) \{ i = a; \} else \{ a = i; \}
 \end{description} 
+The while statement is the second basic control flow statement. It evaluates the expression, and executes the statements in the block if the expression is true. if the statements have finished, the condition is re-evaluated, and when found to be true, the statements are once again executed.
 
 
 \subsection{Block}
@@ -133,7 +135,7 @@ A block statement is a wrapper for a block. A Block opens a new scope. It is use
 \end{description} 
 
 \subsection{Expression}
-An expression in itself is also a statement. This may be illogical, but a function call (which was planned in our language, see subsection \ref{subsec:functions}) is an expression.
+An expression in itself is also a statement. This may be illogical, but a function call (which was planned in our language, see subsection \ref{subsec:functions}) is an expression. Interesting to note is that the resulting value has to be popped. Forgetting this results in a memory leak, as this value will otherwise never be popped.
 
 \begin{description}
 	\item[Syntax:] 
@@ -332,6 +334,100 @@ Global variables are declared at the end of memory, to avoid collision with the 
 
 
 \chapter{Software description}
+
+
+\section{ANTLR4 grammar}
+
+\begin{description}
+	\item[File:] /src/grammar/grammar.g4
+	\item[Description:] \hfill \\
+		Contains the ANTLR4 grammar for PP07.
+\end{description}
+
+
+\section{Java classes}
+
+\begin{description}
+	\item[File:] /src/grammar/PP07Checker.java
+	\item[Description:] \hfill \\
+		Comprises the checker phase of compiling PP07 code. It uses a tree listener to iterate over the code, checking input code for syntax errors, type checking for variables with a symbol table. The checking phase is done in three passes. One for function declaration (FunctionWalker), one for run checking (PrepWalker), and this one to do the rest of the work.
+\end{description}
+
+\begin{description}
+	\item[File:] /src/grammar/PP07PrepWalker.java
+	\item[Description:] \hfill \\
+		Runs before PP07Checker's tree visitor with its own to fill in run declarations, which MUST occur after fucntion declaration checking and before join checking (see concurrency). 
+\end{description}
+
+\begin{description}
+	\item[File:] /src/grammar/PP07FunctionWalker.java
+	\item[Description:] \hfill \\
+		Runs before PP07PrepWalker's tree visitor with its own to fill in function declarations, must occur before join checking (see concurrency) and function call checking. 
+\end{description}
+
+\begin{description}
+	\item[File:] /src/grammar/PP07Generator.java
+	\item[Description:] \hfill \\
+		Generates SPRiL code for valid PP07 code. It uses a visitor to walk through the parse tree and generates imperative programming code for execution on a single Sprockell. The generator generates a haskell file "program.hs" in the folder /sprockell/src. This can then be executed with \texttt{ghc program.hs} from a command line.
+\end{description}
+
+\begin{description}
+	\item[File:] /src/grammar/PP07Compiler.java
+	\item[Description:] \hfill \\
+		The wrapper class used to generate SPRiL code for execution on Sprockells. It uses PP07Checker to validate the code, and after checking generates SPRiL code. This class can be run and requests a filename from a file inside /src/sample. This code is then written to /sprockell/src. See PP07Generator for more details on running the generated code. 
+\end{description}
+
+\begin{description}
+	\item[File:] /src/grammar/Functions.java
+	\item[Description:] \hfill \\
+		For usage in the checker phase. Models a list of functions that are checked for existence and type checked on variables.  
+\end{description}
+
+\begin{description}
+	\item[File:] /src/grammar/Runs.java
+	\item[Description:] \hfill \\
+		For usage in the checker phase. Models a list of Runs (construct for parallel execution of a function), to check whether join statements have a Run statement associated, and to do type-checking on the return type.
+\end{description}
+
+\begin{description}
+	\item[File:] /src/grammar/Locks.java
+	\item[Description:] \hfill \\
+		For usage in the checker phase. Models a list of Locks, to check whether locks are declared.
+\end{description}
+
+\begin{description}
+	\item[File:] /src/grammar/SymbolTable.java
+	\item[Description:] \hfill \\
+		For usage in the checker phase. Reused from the practical excercises, this class models a symbol table. It facilitates type checking in a global scope and a local scope. 
+\end{description}
+
+\begin{description}
+	\item[File:] /src/grammar/Result.java
+	\item[Description:] \hfill \\
+		Reused from the practical excercises. Holds the calculated control flow graph, offsets and types from the checker phase. 
+\end{description}
+
+\begin{description}
+	\item[File:] /src/grammar/Type.java
+	\item[Description:] \hfill \\
+		Enumeration of the types used in our programming language
+\end{description}
+
+\begin{description}
+	\item[File:] /src/grammar/TypeSize.java
+	\item[Description:] \hfill \\
+		Helper class to determine the size of a variable in memory. Useful for larger types like arrays or strings, it is not used in the generated part of the compiler.
+\end{description}
+
+\begin{description}
+	\item[File:] /src/grammar/Value.java
+	\item[Description:] \hfill \\
+\end{description}
+
+\begin{description}
+	\item[File:] /src/grammar/Op.java
+	\item[Description:] \hfill \\
+\end{description}
 
 \chapter{Test plan and results}
 

@@ -11,6 +11,12 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.util.List;
 
+/**
+ * Checks a given PP07 parse Tree on its validity as PP07 code. It uses a 
+ * ParseTreeWalker to walk through the tree, checking code on typing, decla-
+ * ration and generates a control flow graph and types of expressions.
+ * @author tim, martijn
+ */
 
 public class PP07Checker extends GrammarBaseListener {
 
@@ -44,8 +50,16 @@ public class PP07Checker extends GrammarBaseListener {
 	 */
 	private Runs runs;
 
-
-	public List<String> check(ParseTree tree) throws ParseException {
+	/**
+	 * Checks a given PP07 parse Tree on its validity as PP07 code. It uses a 
+	 * ParseTreeWalker to walk through the tree, checking code on typing, decla-
+	 * ration and generates a control flow graph and types of expressions.
+	 * @param tree ParseTree of PP07 source code
+	 * @return List of 
+	 * @throws ParseException on errors in the source code that prevent code 
+	 * generation
+	 */
+	public Result check(ParseTree tree) throws ParseException {
 		PP07PrepWalker walker = new PP07PrepWalker();
 		walker.walk(tree);
 		this.result = new Result();
@@ -59,20 +73,29 @@ public class PP07Checker extends GrammarBaseListener {
 			errors.forEach(System.err::println);
 			throw new ParseException(getErrors());
 		}
-		return this.errors;
+		return this.result;
 	}
 
+	/**
+	 * Checks for an empty program, and has code for detecting the absence 
+	 * of a main method. Thst code is not used because of missing Function
+	 * code in the generator.
+	 */
 	@Override
 	public void exitProgram(ProgramContext ctx) {
 		if (ctx.stat().size() < 1) {
 			addError("Empty program");
 		} else if (!functions.hasFunction("main")) {
-			addError("Program contains no main method");
+//			addError("Program contains no main method");
 		} else {
 			setEntry(ctx, ctx.stat(0));
 		}
 	}
 
+	/**
+	 * Check if variable name does not collide. expression is checked for 
+	 * being the correct type.
+	 */
 	@Override
 	public void exitDeclStat(DeclStatContext ctx) {
 		if (ctx.GLOBAL() == null) {
@@ -92,6 +115,10 @@ public class PP07Checker extends GrammarBaseListener {
 		}
 	}
 
+	/**
+	 * Assignment is checked at being of the correct type. Also checks if the
+	 * variable was declared at all.
+	 */
 	@Override
 	public void exitAssStat(AssStatContext ctx) {
 		if (symbolTable.type(ctx.ID().getText()) == null)
@@ -104,6 +131,9 @@ public class PP07Checker extends GrammarBaseListener {
 		setEntry(ctx, ctx.expr());
 	}
 
+	/**
+	 * incomplete enum declaration. Not used in code generation
+	 */
 	@Override
 	public void exitEnumStat(EnumStatContext ctx) {
 		if (!symbolTable.addGlobal(ctx.ID().getText(), Type.ENUM))
@@ -111,25 +141,36 @@ public class PP07Checker extends GrammarBaseListener {
 		setEntry(ctx, ctx);
 	}
 
+	/**
+	 * Checks whether the type of the expression is boolean.
+	 */
 	@Override
 	public void exitIfStat(IfStatContext ctx) {
 		checkType(ctx.expr(), Type.BOOL);
 		setEntry(ctx, ctx.expr());
 	}
 
+	/**
+	 * Checks whether the type of the expression is boolean
+	 */
 	@Override
 	public void exitWhileStat(WhileStatContext ctx) {
 		checkType(ctx.expr(), Type.BOOL);
 		setEntry(ctx, ctx.expr());
 	}
 
+	/**
+	 * Fall-through of enterBlock. passes on information.
+	 */
 	@Override
 	public void exitBlockStat(BlockStatContext ctx) {
 		// fall-through of enterBlock()
-		setType(ctx, getType(ctx.block()));
 		setEntry(ctx, entry(ctx.block()));
 	}
 	
+	/**
+	 * Opens a new scope for the function, containing the arguments.
+	 */
 	@Override
 	public void enterFuncStat(FuncStatContext ctx) {
 		symbolTable.openScope();
@@ -137,10 +178,14 @@ public class PP07Checker extends GrammarBaseListener {
 			if (!symbolTable.addGlobal(ctx.ID(i).getText(), getType(ctx.type(i))))
 				addError("Variable name " + ctx.ID(i).getText() + " already declared in global scope");
 		}
-		
-		
 	}
 	
+	/**
+	 * Closes the function scope, which contained the arguments. Also
+	 * sets the context of the Function object associated with this
+	 * function.
+	 * See FunctionWalker.exitFuncStat() for more code on this matter.
+	 */
 	@Override
 	public void exitFuncStat(FuncStatContext ctx) {
 		symbolTable.closeScope();
@@ -149,11 +194,18 @@ public class PP07Checker extends GrammarBaseListener {
 		functions.getFunction(ctx.ID(0).getText()).setContext(ctx);
 	}
 
+	/**
+	 * Sets the CFG enty.
+	 */
 	@Override
 	public void exitExprStat(ExprStatContext ctx) {
 		setEntry(ctx, entry(ctx.expr()));
 	}
 
+	/**
+	 * Checks if the Function that the run points to exists, has the right
+	 * arguments. 
+	 */
 	@Override
 	public void exitRunStat(RunStatContext ctx) {
 		String name = ctx.ID(1).getText();
@@ -181,11 +233,17 @@ public class PP07Checker extends GrammarBaseListener {
 
 	}
 
+	/**
+	 * Sets the CFG entry for the given node.
+	 */
 	@Override
 	public void exitLockStat(LockStatContext ctx) {
 		setEntry(ctx, ctx);
 	}
 
+	/**
+	 * Checks whether the lock is declared.
+	 */
 	@Override
 	public void exitUnlockStat(UnlockStatContext ctx) {
 		if (!locks.releaseLock(ctx.ID().getText()))
@@ -193,6 +251,10 @@ public class PP07Checker extends GrammarBaseListener {
 		setEntry(ctx, ctx);
 	}
 
+	/**
+	 * Checks whether this return statement is the last 
+	 * statement in the block.
+	 */
 	@Override
 	public void exitReturnStat(ReturnStatContext ctx) {
 		ParseTree stat = ctx;
@@ -207,11 +269,17 @@ public class PP07Checker extends GrammarBaseListener {
 		setEntry(ctx, ctx.expr());
 	}
 
+	/**
+	 * Opens the scope for the given block.
+	 */
 	@Override
 	public void enterBlock(@NotNull BlockContext ctx) {
 		symbolTable.openScope();
 	}
 
+	/**
+	 * Closes the scope for the given block.
+	 */
 	@Override
 	public void exitBlock(BlockContext ctx) {
 		if (!ctx.stat().isEmpty()) {
@@ -220,21 +288,35 @@ public class PP07Checker extends GrammarBaseListener {
 		symbolTable.closeScope();
 	}
 
+	/**
+	 * Setting type to INT
+	 */
 	@Override
 	public void exitIntType(IntTypeContext ctx) {
 		setType(ctx, Type.INT);
 	}
 
+	/**
+	 * Setting type to BOOL
+	 */
 	@Override
 	public void exitBoolType(BoolTypeContext ctx) {
 		setType(ctx, Type.BOOL);
 	}
 
+	/**
+	 * Setting type to VOID
+	 */
 	@Override
 	public void exitVoidType(VoidTypeContext ctx) {
 		setType(ctx, Type.VOID);
 	}
 
+	/**
+	 * Checks whether this function call matches arguments with the
+	 * function it calls. Sets the type of this expression to the
+	 * return type of the function.
+	 */
 	@Override
 	public void exitFuncCall(FuncCallContext ctx) {
 		String name = ctx.ID().getText();
@@ -242,12 +324,17 @@ public class PP07Checker extends GrammarBaseListener {
 		if (functions.hasFunction(name)) {
 			if (ctx.expr().size() == function
 					.getArgumentCount()) {
+				boolean good = true;
 				for (int i = 0; i < ctx.expr().size(); i++) {
 					if (!getType(ctx.expr(i)).equals(function.getArgument(i))) {
 						addError("Argument " + i + " of run call " + name
 								+ " did not match expected type. "
 								+ "Expected: " + function.getArgument(i)
 								+ " Actual: " + getType(ctx.expr(i)));
+						good = false;
+					}
+					if (good) {
+						setType(ctx, function.getReturntype());
 					}
 				}
 			} else {
@@ -261,6 +348,11 @@ public class PP07Checker extends GrammarBaseListener {
 		}
 	}
 
+	/**
+	 * Gets the return type of the run's function to set this 
+	 * expression to. If no run exists with that name, it 
+	 * gives an error.
+	 */
 	@Override
 	public void exitJoinExpr(JoinExprContext ctx) {
 		if (!runs.hasRun(ctx.ID().getText())) {
@@ -270,6 +362,10 @@ public class PP07Checker extends GrammarBaseListener {
 		setEntry(ctx, ctx);
 	}
 	
+	/**
+	 * Checks the existence of a lock with the given name. Sets the
+	 * type of the expression to BOOL.
+	 */
 	@Override
 	public void exitLockedExpr(LockedExprContext ctx) {
 		if (!locks.releaseLock(ctx.ID().getText())) {
@@ -279,6 +375,9 @@ public class PP07Checker extends GrammarBaseListener {
 		setEntry(ctx, ctx);
 	}
 	
+	/**
+	 * Checks input types, INT and INT, and sets return type to INT
+	 */
 	@Override
 	public void exitPlusExpr(PlusExprContext ctx) {
 		if (!compareType(ctx.expr(0), Type.INT) && compareType(ctx.expr(1), Type.INT)) {
@@ -289,6 +388,9 @@ public class PP07Checker extends GrammarBaseListener {
 		setEntry(ctx, entry(ctx.expr(0)));
 	}
 	
+	/**
+	 * Checks input types, INT and INT, and sets return type to INT
+	 */
 	@Override
 	public void exitMultExpr(MultExprContext ctx) {
 		if (compareType(ctx.expr(0), Type.INT) && compareType(ctx.expr(1), Type.INT)) {
@@ -299,6 +401,9 @@ public class PP07Checker extends GrammarBaseListener {
 		setEntry(ctx, entry(ctx.expr(0)));
 	}
 	
+	/**
+	 * Checks input types, INT and INT, and sets return type to INT
+	 */
 	@Override
 	public void exitExpExpr(ExpExprContext ctx) {
 		if (compareType(ctx.expr(0), Type.INT) && compareType(ctx.expr(1), Type.INT)) {
@@ -310,6 +415,9 @@ public class PP07Checker extends GrammarBaseListener {
 		setEntry(ctx, entry(ctx.expr(0)));
 	}
 	
+	/**
+	 * Checks input types, BOOL and BOOL, and sets return type to BOOL
+	 */
 	@Override
 	public void exitBoolExpr(BoolExprContext ctx) {
 		if (compareType(ctx.expr(0), Type.BOOL) && compareType(ctx.expr(1), Type.BOOL)) {
@@ -321,6 +429,10 @@ public class PP07Checker extends GrammarBaseListener {
 		setEntry(ctx, entry(ctx.expr(0)));
 	}
 	
+	/**
+	 * Depending on the operation (!= or ==), accepts two BOOLs or two 
+	 * INTs, and returns a BOOL.
+	 */
 	@Override
 	public void exitCmpExpr(CmpExprContext ctx) {
 		if (compareType(ctx.expr(0), Type.BOOL) && compareType(ctx.expr(1), Type.BOOL) 
@@ -335,6 +447,10 @@ public class PP07Checker extends GrammarBaseListener {
 		setEntry(ctx, entry(ctx.expr(0)));
 	}
 	
+	/**
+	 * Depending on the operation (! or -) accepts a BOOL or INT, and 
+	 * returns a BOOL or INT respectively
+	 */
 	@Override
 	public void exitPrfExpr(PrfExprContext ctx) {
 		if (ctx.prfOp().NOT() != null && compareType(ctx.expr(), Type.BOOL)) {
@@ -345,12 +461,19 @@ public class PP07Checker extends GrammarBaseListener {
 		setEntry(ctx, entry(ctx.expr()));
 	}
 	
+	/**
+	 * Type of expression is passed on.
+	 */
 	@Override
 	public void exitParExpr(ParExprContext ctx) {
 		setType(ctx, getType(ctx.expr()));
 		setEntry(ctx, entry(ctx.expr()));
 	}
 	
+	/**
+	 * Gets the Type of the variable and sets the type of this expression
+	 * to it. Gives an error if the variable was not declared.
+	 */
 	@Override
 	public void exitIdExpr(IdExprContext ctx) {
 		String id = ctx.ID().getText();
@@ -363,24 +486,36 @@ public class PP07Checker extends GrammarBaseListener {
 		}
 	}
 	
+	/**
+	 * Sets the expression type to INT.
+	 */
 	@Override
 	public void exitNumExpr(NumExprContext ctx) {
 		setType(ctx, Type.INT);
 		setEntry(ctx, ctx);
 	}
 	
+	/**
+	 * Sets the expression type to INT.
+	 */
 	@Override
 	public void exitEidExpr(EidExprContext ctx) {
 		setType(ctx, Type.INT);
 		setEntry(ctx, ctx);
 	}
 	
+	/**
+	 * Sets the expression type to BOOL.
+	 */
 	@Override
 	public void exitTrueExpr(TrueExprContext ctx) {
 		setType(ctx, Type.BOOL);
 		setEntry(ctx, ctx);
 	}
 	
+	/**
+	 * Sets the expression type to BOOL.
+	 */
 	@Override
 	public void exitFalseExpr(FalseExprContext ctx) {
 		setType(ctx, Type.BOOL);
@@ -436,6 +571,10 @@ public class PP07Checker extends GrammarBaseListener {
 		return true;
 	}
 
+	/**
+	 * Adds an error to the list of errors.
+	 * @param string error message
+	 */
 
 	private void addError(String string) {
 		errors.add(string);
