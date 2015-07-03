@@ -8,6 +8,8 @@
 \usepackage{amsthm}
 \usepackage{float} \floatstyle{boxed} \restylefloat{figure}
 \usepackage[toc,page]{appendix}
+\usepackage{listings}
+\lstset{tabsize=4, numbers=left, numberstyle=\scriptsize}
 \author{Martijn Verkleij (s1466895) and Tim Kerkhoven (s1375253)}
 \title{Report PP07}
 \begin{document}
@@ -27,10 +29,10 @@ PP07 is a programming language written for execution on the Sprockell simulator.
 \chapter{Language description} \label{chp:langdesc}
 
 \section{Program Structure} \label{sec:structure}
-In this chapter the structure of the compiled code is discussed. For the structure of the language itself, see section \ref{sec:grammar}. 
+In this section the structure of the compiled code is discussed. In the next sections the individual language constructs are discussed. 
 \subsection{Thread branching}
 Before the program can begin, the individial threads must be separated. This is done by the following set of instructions:
-\begin{verbatim}
+\begin{lstlisting}
 	Const 4 Reg1				// Load 4
 	Compute Add SPID Reg1 Reg2	// Compute SPID + 4 in Reg2
 	Jump (Ind Reg2)				// Branch out
@@ -38,23 +40,23 @@ Before the program can begin, the individial threads must be separated. This is 
 	Jump (Abs 0xF0)				// Sprockell for thread pool --> thread control loop
 	...
 	Jump (Abs 0xFF)
-\end{verbatim}
+\end{lstlisting}
 
 \subsection{Thread control loop}
 Each Sprockell is redirected to a part of the program reserved for itself where it will continuously poll shared memory to see whether it has been assigned a function to execute. If this is the case, it will prepare the new thread for execution and execute the task. Whenever the task is finished, it will write the result of the function, if applicable, to its return value field, which is then marked ready. Another thread can then read this value again with a \texttt{join} statement. When a join statement is executed, that thread will then continuously poll for the return value to be ready. If it is, it is read out and its ready bit and the thread's occupation bit are unset. This means a thread with a non-null return value MUST be joined, since the thread will otherwise lock a Sprockell forever. 
 
 A thread control loop looks as follows:
-\begin{verbatim}
-	Read 7 x SPID + 2		// read PC ready bit 	\newline
-	Receive Reg1 \newline
-	Jump (Rel 4)						// jump to end branch\newline
-	Read 7 x SPID + 1		// get function address \newline
-	Receive Reg2 \newline
-										//Initialise AR \newline
-	Jump (Ind Reg2) \newline
-	Branch Reg1 (Rel -3)				// branch on non-null ready bit \newline
+\begin{lstlisting}
+	Read 7 x SPID + 2					// read PC ready bit
+	Receive Reg1
+	Jump (Rel 4)						// jump to end branch
+	Read 7 x SPID + 1					// get function address
+	Receive Reg2
+										//Initialise AR
+	Jump (Ind Reg2)
+	Branch Reg1 (Rel -3)				// branch on non-null ready bit
 	Jump (Rel -7)						// jump to start
-\end{verbatim}
+\end{lstlisting}
 
 
 \subsection{Functions}
@@ -94,7 +96,7 @@ A variable can be assigned a value with a similar syntax as before.
 \subsection{Control flow statements}
 
 \subsubsection*{If and else}
-The first of the basic control flow statements is the if-statement. The code  The if-statement is extended with the else-statement.
+The first of the basic control flow statements is the if-statement. The if-statement is extended with the else-statement.
 
 \begin{description}
 	\item[Syntax:] 
@@ -118,7 +120,7 @@ The while statement is the second basic control flow statement. It evaluates the
 
 
 \subsection{Block}
-A block statement is a statement, and can therefore be made wherever. It opens a new scope. It is used in the control flow statements.
+A block statement is a wrapper for a block. A Block opens a new scope. It is used in the control flow statements, but may also be arbitrarily used to fence off variables.
 
 \begin{description}
 	\item[Syntax:] 
@@ -152,17 +154,13 @@ A function definition is a statement. It will not be executed by default, it wil
 
 
 \subsubsection{Sequential function call}
-A function can be called in sequence. This adds a new activation record, and pushes it to the activation record stack. It will then set the PC and start execution. The function itself is then responsible for adding the return value to the stack and removing the activation record, after which it returns the PC to the value of the return pointer.
+A function can be called in sequence. This adds a new activation record to memory. It will then set the PC and start execution. The function itself is then responsible for adding the return value to the stack and discarding the AR, after which it returns the PC to the value of the return pointer.
 
 
 In a sequential function call the caller must set up some things before the function can be executed. An activation record (Section \ref{fig:actrecord}) must be made. 
 
 \paragraph{Pre-call}
-\begin{verbatim}
-	// All activation records are pushed on the stack.
-		
-	 
-	
+\begin{lstlisting}
 	// Caller's ARP
 	Load #carp Reg1
 	Push Reg1 
@@ -202,7 +200,7 @@ In a sequential function call the caller must set up some things before the func
 	Load #argc Reg2
 	Push Reg1
 	
-\end{verbatim}
+\end{lstlisting}
 
 
 
@@ -282,7 +280,7 @@ Global variables are declared at the end of memory, to avoid collision with the 
 
 \chapter{Grammar}
 
-\begin{verbatim}
+\begin{lstlisting}
 
 grammar Grammar;
 
@@ -293,53 +291,61 @@ program	: stat+;
 
 /* Statements
 * 	declStat	- Declaration and Optional Assignment
-*		Declare statement, declare a (optionally global) variable and optionally assign an expression to it
+*		Declare statement, declare a (optionally global) variable and 
+*		optionally assign an expression to it
 *	assStat		- Assignment
 *		Assign statement, assign an expression to a variable
 *	enumStat	- Enumeration Declaration
-*		Enumeration statement, declare an (optionally global) enumeration, and assign values to it. Assignment must
-*		occur in this phase
+*		Enumeration statement, declare an (optionally global) enumeration, 
+*		and assign values to it. Assignment must occur in this phase
 *	ifStat		- If
-*		If statement, with expression between parentheses followed by a statement and optionally 'else' and another
-*		statement
+*		If statement, with expression between parentheses followed by a 
+*		statement and optionally 'else' and another statement
 *	whileStat	- While
-*		While statement, with expression between parentheses followed by a statement
+*		While statement, with expression between parentheses followed by a
+*		statement
 *	blockStat	- Block
 *		Block statement, see 'block'
 *	funcStat	- Function Declaration
-*		Function declaration, consisting of a type, id, parameters and a block statement
+*		Function declaration, consisting of a type, id, parameters and a 
+*		block statement
 *	exprStat	- Expression
-*		Expression statement, an expression can be a statement, e.g. a function call
+*		Expression statement, an expression can be a statement, e.g. a  
+*		function call
 *	runStat		- Run
-*		Run statement, which creates a new thread that executes a function defined in the call to run, parameters to
-*		this function are also passed along at this stage as expressions
+*		Run statement, which creates a new thread that executes a function 
+*		defined in the call to run, parameters to this function are also  
+*		passed along at this stage as expressions
 *	lockStat	- Lock
-*		Looks up a lock in memory, if it's zero, set it to one and continue, if it's one, try again. This effectively
-*		"locks" the lock
+*		Looks up a lock in memory, if it's zero, set it to one and continue, 
+*		if it's one, try again. This effectively "locks" the lock
 *	unlockStat	- Unlock
 *		Set a lock in memory to zero, effectively "unlocking" the lock
 *	returnStat	- Return
-*		Return statement, sets return value of the function. Must be located at top-level of the function scope
+*		Return statement, sets return value of the function. Must be located 
+*		at top-level of the function scope
 */
-stat	: GLOBAL? type ID (ASS expr)? SEMI							#declStat
-		| ID ASS expr SEMI 											#assStat
-		| ENUM ID ASS LBRACE EID (COMMA EID)* RBRACE SEMI			#enumStat
-		| IF LPAR expr RPAR block (ELSE block)?						#ifStat
-		| WHILE LPAR expr RPAR block								#whileStat
-		| block														#blockStat
-		| type ID LPAR (type ID (COMMA type ID)*)? RPAR block		#funcStat
-		| expr SEMI													#exprStat
-		| RUN ID LPAR (ID (COMMA expr)*) RPAR SEMI					#runStat
-		| LOCK ID SEMI												#lockStat
-		| UNLOCK ID SEMI											#unlockStat
-		| RETURN expr SEMI											#returnStat
+
+
+stat	: GLOBAL? type ID (ASS expr)? SEMI						#declStat
+		| ID ASS expr SEMI 										#assStat
+		| ENUM ID ASS LBRACE EID (COMMA EID)* RBRACE SEMI		#enumStat
+		| IF LPAR expr RPAR block (ELSE block)?					#ifStat
+		| WHILE LPAR expr RPAR block 							#whileStat
+		| block													#blockStat
+		| type ID LPAR (type ID (COMMA type ID)*)? RPAR block	#funcStat
+		| expr SEMI												#exprStat
+		| RUN ID LPAR (ID (COMMA expr)*) RPAR SEMI				#runStat
+		| LOCK ID SEMI											#lockStat
+		| UNLOCK ID SEMI										#unlockStat
+		| RETURN expr SEMI										#returnStat
 		;
 
 /*	Block Statement
 *		Contains zero or more statements between two braces
 */
 block 	: LBRACE stat* RBRACE
-		;
+	;
 
 /* TypeSize
 *	INT
@@ -349,19 +355,21 @@ block 	: LBRACE stat* RBRACE
 *	VOID
 *		Empty type
 */
-type	: INT														#intType
-		| BOOL														#boolType
-		| VOID														#voidType
+type	: INT													#intType
+		| BOOL													#boolType
+		| VOID													#voidType
 		;
 
 /* Expressions
 *	funcCall 	- Function Call Expression
 *		Call a function
 *	joinExpr	- Join Expression
-*		After new a thread is created with 'run', it's return value can be obtained using 'join'. Note that this will
-*		block the current thread if there is either no return value (call to void function) or the thread has not not
-*		finished its execution yet. The former will block indefinately, the latter will block until the return value of
-*		the thread is set
+*		After new a thread is created with 'run', it's return value can be 
+*		obtained using 'join'. Note that this will block the join-calling 
+*		thread if the thread has not finished its execution yet. The 
+*		expression will block until the return value of the thread is known.
+*		It also frees up the Sprockell which ran the function, so it is
+*		important that this function is always called for any threads made. 
 *	lockedExpr	- Locked Expression
 *		Checks if a lock is 'locked', returns a boolean. See 'lock' and 'unlock'.
 *	plusExpr	- Addition Expression
@@ -369,7 +377,8 @@ type	: INT														#intType
 *	multExpr	- Multiplication Expression
 *		Multiplication and integer division
 *	expExpr		- Exponent Expression
-*		Exponentiation b^n. Where b is any integer and n is any non-negative integer
+*		Exponentiation b^n. Where b is any integer and n is any non-negative 
+*		integer
 *	boolExpr	- Boolean Expression
 *		And and or operations
 *	cmpExpr		- Comparison Expression
@@ -389,21 +398,21 @@ type	: INT														#intType
 *	falseExpr	- False Expression
 *		False
 */
-expr	: ID LPAR (expr (COMMA expr)*)? RPAR						#funcCall
-		| JOIN ID													#joinExpr
-		| LOCKED ID													#lockedExpr
-		| expr plusOp expr											#plusExpr
-		| expr multOp expr											#multExpr
-		| expr expOp expr											#expExpr
-		| expr boolOp expr											#boolExpr
-		| expr cmpOp expr											#cmpExpr
-		| prfOp expr												#prfExpr
-		| LPAR expr RPAR 											#parExpr
-		| ID														#idExpr
-		| NUM														#numExpr
-		| EID														#eidExpr
-		| TRUE														#trueExpr
-		| FALSE														#falseExpr
+expr	: ID LPAR (expr (COMMA expr)*)? RPAR					#funcCall
+		| JOIN ID												#joinExpr
+		| LOCKED ID												#lockedExpr
+		| expr plusOp expr										#plusExpr
+		| expr multOp expr										#multExpr
+		| expr expOp expr										#expExpr
+		| expr boolOp expr										#boolExpr
+		| expr cmpOp expr										#cmpExpr
+		| prfOp expr											#prfExpr
+		| LPAR expr RPAR 										#parExpr
+		| ID													#idExpr
+		| NUM													#numExpr
+		| EID													#eidExpr
+		| TRUE													#trueExpr
+		| FALSE													#falseExpr
 		;
 
 // Operators
@@ -471,9 +480,11 @@ CARET:	'^';
 
 /* IDs, numbers and strings
 *	ID
-*		Starts with a lowercase letter, followed by zero or more letters, underscores and digits
+*		Starts with a lowercase letter, followed by zero or more letters,
+*		underscores and digits
 *	EID
-*		Starts with an uppercase letter, followed by zero or more letters, underscores and digits
+*		Starts with an uppercase letter, followed by zero or more letters, 
+*		underscores and digits
 *	NUM
 *		Consists of one or more digits
 *	STR
@@ -490,7 +501,8 @@ fragment UCASEL: [A-Z];		// Any uppercase letter
 fragment LCASEL: [a-z];		// Any lowercase letter
 fragment DIGIT: [0-9];		// Any digit
 
-// Below are all letters in either upper or lower case, these are used to define keywords.
+// Below are all letters in either upper or lower case, these are used to 
+// define keywords.
 fragment A: [aA];
 fragment B: [bB];
 fragment C: [cC];
@@ -523,7 +535,7 @@ COMMENT: (('/*'.*? '*/')|('//' .*? '\n')) -> skip;
 WS: [ \t\r\n]+ -> skip;
 
 
-\end{verbatim}
+\end{lstlisting}
 
 \end{appendices}
 
