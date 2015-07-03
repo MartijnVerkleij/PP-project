@@ -38,7 +38,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		this.lineNum = 0;
 		this.endProgLabel = getNewLabelID();
 		File temp = new File("temp.hs");
-		File file = new File("program.hs");
+		File file = new File("sprockell/src/program.hs");
 		try {
 			temp.createNewFile();
 			writer = new BufferedWriter(new FileWriter(temp));
@@ -78,7 +78,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 
 	private void generateHeader() throws IOException {
 		String[] header = new String[]{
-				"import sprockell.src.Sprockell.System",
+				"import Sprockell.System",
 				"prog :: [Instruction]",
 				"prog = ["
 		};
