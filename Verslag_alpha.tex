@@ -88,6 +88,12 @@ Statements are the elements which are executed in order to run the program.
 		int i; ~~~ 
 		int i = 5;  ~~~ 
 		int i = 5 * j + 6;
+	\item[Sprill] Generated code for third example:
+		\begin{enumerate}
+			\item \emph{evaluate expression \emph{5 * j + 6} and push to stack}
+			\item Pop RegA
+			\item Store RegA \emph{MemAddr}
+		\end{enumerate}
 \end{description} 
 A variable can be declared with scope-awareness. A variable is declared in memory, and its value may or may not be assigned, depending on if a value to assign is given.
 
@@ -99,6 +105,12 @@ A variable can be declared with scope-awareness. A variable is declared in memor
 	\item[Example:] 
 		i = 5; ~~~ 
 		i = 5 * j + 6;
+	\item[Sprill] Generated code for first example (where \emph{i} is a global variable):
+		\begin{enumerate}
+			\item \emph{evaluate expression \emph{5} and push to stack}
+			\item Pop RegA
+			\item Write RegA \emph{MemAddr} 
+		\end{enumerate}
 \end{description} 
 A variable can be assigned a value with a similar syntax as before. The resulting value is written to memory.
 
@@ -112,6 +124,18 @@ A variable can be assigned a value with a similar syntax as before. The resultin
 	\item[Example:] 
 		if (true) \{ \ldots \} ~~~
 		if (i \textless ~a) \{ i = a; \} else \{ a = i; \}
+	\item[Sprill] Generated code for the second example:
+		\begin{enumerate}
+			\item \emph{evaluate expression \emph{i \textless ~a} and push to stack}
+			\item Pop RegA
+			\item Compute Equal RegA Zero RegA
+			\item Branch RegA (Abs 7)
+			\item \emph{evaluate \emph{i = a}}
+			\item Jump (Abs 9)
+			\item Nop
+			\item \emph{evaluate \emph{a = i}}
+			\item Nop
+		\end{enumerate}
 \end{description} 
 
 The first of the basic control flow statements is the if-statement. The if-statement is extended with the else-statement. If the condition holds, the content of the if-block is executed, otherwise, either the contents of the else statement are executed, or this statement finishes. This depends on whether an else-statement is provided.
@@ -123,8 +147,19 @@ The first of the basic control flow statements is the if-statement. The if-state
 	\item[Syntax:] 
 		while (\textless expression\textgreater ) \textless block\textgreater
 	\item[Example:] 
-		if (true) \{ \ldots \} ~~~
-		if (i \textless ~a) \{ i = a; \} else \{ a = i; \}
+		while (\ldots) \{\ldots\}
+	\item[Sprill] Generated code for first example:
+		\begin{enumerate}
+			\item Jump (Abs 4)
+			\item Nop
+			\item \emph{evaluate \emph{\ldots}}
+			\item Nop
+			\item \emph{evaluate expression \emph{\ldots} and push to stack}
+			\item Pop RegA
+			\item Const 1 RegB
+			\item Compute Equal RegA RegB RegA
+			\item Branch RegA (Abs 2)
+		\end{enumerate}
 \end{description} 
 The while statement is the second basic control flow statement. It evaluates the expression, and executes the statements in the block if the expression is true. if the statements have finished, the condition is re-evaluated, and when found to be true, the statements are once again executed.
 
@@ -137,6 +172,10 @@ A block statement is a wrapper for a block. A Block opens a new scope. It is use
 		\{ \textless statement\textgreater * \}
 	\item[Example:] 
 		\{ int i = 5; j = 6; \}
+	\item[Sprill] Generated code:
+		\begin{enumerate}
+			\item \emph{evaluate all statements in the block}
+		\end{enumerate}
 \end{description} 
 
 \subsection{Expression}
@@ -147,6 +186,11 @@ An expression in itself is also a statement. This may be illogical, but a functi
 		\textless statement\textgreater
 	\item[Example:] 
 		\{ 2 + 3; ~~~ function(); \}
+	\item[Sprill] Generated code:
+		\begin{enumerate}
+			\item \emph{evaluate expression}
+			\item Pop Zero
+		\end{enumerate}
 \end{description} 
 
 \section{Expressions}
@@ -159,6 +203,15 @@ Expressions are always part of a statement. This makes using the stack for solvi
 		\textless expression\textgreater ~- \textless expression \textgreater
 	\item[Example:] \hfill \\
 		3 + 5 + 6 + 7 
+	\item[Sprill] Generated code for subtraction:
+		\begin{enumerate}
+			\item \emph{evaluate second expression}
+			\item \emph{evaluate first expression}
+			\item Pop RegA
+			\item Pop RegB
+			\item Compute Sub RegA RegB RegA
+			\item Push RegA
+		\end{enumerate}
 \end{description} 
 Plus and minus are only defined for expressions which return an integer. They return an integer.
 
@@ -169,6 +222,15 @@ Plus and minus are only defined for expressions which return an integer. They re
 		\textless expression\textgreater ~/ \textless expression \textgreater
 	\item[Example:] \hfill \\
 		3 / 5 * 36
+	\item[Sprill] Generated code for multiplication:
+		\begin{enumerate}
+			\item \emph{evaluate second expression}
+			\item \emph{evaluate first expression}
+			\item Pop RegA
+			\item Pop RegB
+			\item Compute Mul RegA RegB RegA
+			\item Push RegA
+		\end{enumerate}
 \end{description}
 Multiplication is defined for two integer expressions, and returns an integer.
 Division is also defined for two integer expressions, it returns the integer division of the two expressions. 
@@ -179,6 +241,25 @@ Division is also defined for two integer expressions, it returns the integer div
 		\textless expression\textgreater \^{} \textless expression \textgreater
 	\item[Example:] \hfill \\
 		3 \^{} 5
+	\item[Sprill] Generated code for example (this is a suboptimal solution and would have been fixed if we had more time:
+		\begin{enumerate}
+			\item \emph{evaluate second expression}
+			\item \emph{evaluate first expression}
+			\item Pop RegA
+			\item Pop RegB
+			\item Compute Equal RegB Zero RegD
+			\item Branch RegD (Abs 15)
+			\item Const 1 RegC
+			\item Const 1 RegE
+			\item Jump (Abs 12)
+			\item Compute Mul RegA RegE RegE
+			\item Compute Sub RegB RegC RegB
+			\item Compute GtE RegB RegC RegD
+			\item Branch RegD (Abs 10)
+			\item Jump (Abs 17)
+			\item Const 1 RegE
+			\item Push RegE
+		\end{enumerate}
 \end{description}
 Exponentiation is defined for two integers, and returns the result of expression 1 to the power of expression 2 as an integer.
 
@@ -188,7 +269,16 @@ Exponentiation is defined for two integers, and returns the result of expression
 		\textless expression\textgreater \&\& \textless expression \textgreater \\
 		\textless expression\textgreater || \textless expression \textgreater
 	\item[Example:] \hfill \\
-		i \&\& (3 < 5)
+		i \&\& (3 \textless ~5)
+	\item[Sprill] Generated code for AND operator:
+		\begin{enumerate}
+			\item \emph{evaluate second expression}
+			\item \emph{evaluate first expression}
+			\item Pop RegA
+			\item Pop RegB
+			\item Compute And RegA RegB RegA
+			\item Push RegA
+		\end{enumerate}
 \end{description}
 Boolean operators require two boolean expressions as input, and deliver the boolean AND or OR result repectively as a boolean value.
 
@@ -204,6 +294,15 @@ Boolean operators require two boolean expressions as input, and deliver the bool
 	\item[Example:] \hfill \\
 		3 \textless ~5 \\
 		5 != 6
+	\item[Sprill] Generated code for != operator:
+		\begin{enumerate}
+			\item \emph{evaluate second expression}
+			\item \emph{evaluate first expression}
+			\item Pop RegA
+			\item Pop RegB
+			\item Compute NEq RegA RegB RegA
+			\item Push RegA
+		\end{enumerate}
 		
 \end{description}
 Comparison operators require two boolean expressions as input, and deliver whether the two are equal, larger than, larger than or equal to, smaller than, smaller than or equal to and not equal respectively as a boolean value.
@@ -216,6 +315,14 @@ Comparison operators require two boolean expressions as input, and deliver wheth
 	\item[Example:] \hfill \\
 		!True == False \\
 		-5
+	\item[Sprill] Generated code for NOT operator:
+		\begin{enumerate}
+			\item \emph{evaluate expression}
+			\item Pop RegA
+			\item Const 1 RegB
+			\item Compute Xor RegA RegB RegA
+			\item Push RegA 
+		\end{enumerate}
 \end{description}
 The minus operator accepts an integer expression as input and returns the negative equivalent of the same integer as an integer.
 The not operator accepts a boolean expression as input and returns the opposing value as a boolean.
@@ -227,7 +334,7 @@ The not operator accepts a boolean expression as input and returns the opposing 
 	\item[Syntax:] \hfill \\ 
 		( \textless expression\textgreater )
 	\item[Example:] \hfill \\
-		(3 + 2) * 5
+		(3 + 2) * 5 
 \end{description}
 Not implemented in SPRiL-code, parentheses serve in the parsing phase as a way to give explicit priority in resolving expressions.
 
@@ -239,9 +346,20 @@ Not implemented in SPRiL-code, parentheses serve in the parsing phase as a way t
 		 true\\
 		 false
 	\item[Example:] \hfill \\
-		i\\
+		i\\ 
 		5\\
 		false
+	\item[Sprill] Generated code for ID, where ID is global:
+		\begin{enumerate}
+			\item Read \emph{MemAddr}
+			\item Receive RegA
+			\item Push RegA
+		\end{enumerate}
+	\item[Sprill] Generated code for number:
+		\begin{enumerate}
+			\item Const \emph{number} RegA
+			\item Push RegA
+		\end{enumerate}
 \end{description}
 These serve as the leaves of all expressions inside the language. Variable names have to be resolved from memory, either local or shared, and return its value, which is of the variable's type given at declaration. Numbers represent their own value in integer form, and true and false represent their values in boolean form.
 
@@ -434,6 +552,18 @@ Global variables are declared at the end of memory, to avoid collision with the 
 \end{description}
 
 \chapter{Test plan and results}
+
+\section{Test plan}
+Three types of testing have been performed: syntax testing, contextual testing and semantic testing. Of the three types, the former two are automated, and the latter has to be done manually.
+\subsubsection*{Syntax Testing}
+For the syntax testing, most, if not all, of the features in the grammar have been put in a single program. By testing on the grammar, not the implementation, we can also test for features we did not implement. The tester tests four different files, each with a different error, in addition a the correct file.
+\subsubsection*{Contextual Testing}
+The contextual testing is done in the exact same way as the syntax testing, only with different errors.
+\subsubsection*{Semantic Testing}
+The semantic tests have to be performed manually, each test will either print a character, loop indefinitely or crash. This has to be checked with ghci.
+
+\section{Results}
+All tests show the expected results, and are therefore passed.
 
 \chapter{Conclusion}
 
