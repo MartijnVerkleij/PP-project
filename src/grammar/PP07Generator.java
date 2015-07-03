@@ -94,28 +94,11 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 				"\tRead (Addr 0) ,",
 				"\tReceive RegA ,",
 				"\tWrite RegA (Addr 0x1000000) ,",
-				"\tNop ,",
-				"\tNop ,",
-				"\tNop ,",
-				"\tNop ,",
-				"\tNop ,",
-				"\tNop ,",
-				"\tNop ,",
-				"\tNop ,",
-				"\tNop ,",
-				"\tNop ,",
-				"\tNop ,",
-				"\tNop ,",
-				"\tNop ,",
-				"\tNop ,",
-				"\tNop ,",
-				"\tNop ,",
-				"\tNop ,",
-				"\tNop ,",
-				"\tNop ,",
+				"\tRead (Addr 0x0) ,",
+				"\tReceive RegA ,",
 				"\tEndProg",
 				"\t]",
-				"main = run 1 prog"
+				"main = run 1 prog >> putChar '\\n'"
 		};
 		for (String s : footer) {
 			if (s.equals("\tEndProg")) {
@@ -228,7 +211,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 
 	@Override
 	public Op visitFuncStat(@NotNull GrammarParser.FuncStatContext ctx) {
-
+		// TODO: Not implemented
 		return null;
 	}
 
