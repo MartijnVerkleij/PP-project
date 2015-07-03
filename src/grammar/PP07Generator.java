@@ -78,7 +78,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 
 	private void generateHeader() throws IOException {
 		String[] header = new String[]{
-				"import Sprockell.System",
+				"import sprockell.src.Sprockell.System",
 				"prog :: [Instruction]",
 				"prog = ["
 		};
@@ -410,10 +410,10 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 	public Op visitIdExpr(@NotNull GrammarParser.IdExprContext ctx) {
 		String id = ctx.ID().getText();
 		if (symbolTable.isGlobal(id)) {
-			emit(OpCode.Read, "Addr " + symbolTable.offset(id));
+			emit(OpCode.Read, "(Addr " + symbolTable.offset(id) + ")");
 			emit(OpCode.Receive, Indexes.RegA.toString());
 		} else {
-			emit(OpCode.Load, "Addr " + (symbolTable.arp(id) + symbolTable.offset(id)), Indexes.RegA.toString());
+			emit(OpCode.Load, "(Addr " + (symbolTable.arp(id) + symbolTable.offset(id)) + ")", Indexes.RegA.toString());
 		}
 		emit(OpCode.Push, Indexes.RegA.toString());
 		return null;
