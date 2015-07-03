@@ -127,14 +127,14 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 				Indexes.RegA.toString()); // compare
 
 		if (ctx.ELSE() != null) {
-			String endLabel = getNewLabelID() + "endif"; // label for jump to end
+			String endLabel = getNewLabelID(); // label for jump to end
 
 			// jump to end or continue
 			emit(OpCode.Branch, Indexes.RegA.toString(), endLabel);
 			visit(ctx.block(0));
 			emit(endLabel, OpCode.Nop);
 		} else {
-			String elseLabel = getNewLabelID() + "elseif"; // label for jump to else
+			String elseLabel = getNewLabelID(); // label for jump to else
 
 			emit(OpCode.Branch, Indexes.RegA.toString(), elseLabel);
 			visit(ctx.block(0));
@@ -147,8 +147,8 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 	@Override
 	public Op visitWhileStat(@NotNull GrammarParser.WhileStatContext ctx) {
 		// Labels
-		String beginLabel = getNewLabelID() + "beginwhile";
-		String checkLabel = getNewLabelID() + "checkwhile";
+		String beginLabel = getNewLabelID();
+		String checkLabel = getNewLabelID();
 
 		emit(OpCode.Jump, checkLabel); // jump to check
 		emit(beginLabel, OpCode.Nop); // set begin label
@@ -269,8 +269,8 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 	@Override
 	public Op visitExpExpr(@NotNull GrammarParser.ExpExprContext ctx) {
 		// Labels
-		String zeroLabel = getNewLabelID() + "exp_with_zero";
-		String endLabel = getNewLabelID() + "end";
+		String zeroLabel = getNewLabelID();
+		String endLabel = getNewLabelID();
 
 		// Evaluating expressions
 		visit(ctx.expr(0));
@@ -288,8 +288,8 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		emit(OpCode.Compute, "Add", Indexes.RegA.toString(), Indexes.Zero.toString(), Indexes.RegA.toString());
 		{ // Block to clarify, while loop in here
 			// More Labels
-			String beginLabel = getNewLabelID() + "beginwhile";
-			String checkLabel = getNewLabelID() + "checkwhile";
+			String beginLabel = getNewLabelID();
+			String checkLabel = getNewLabelID();
 
 			emit(OpCode.Jump, checkLabel); // jump to check
 
