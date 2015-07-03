@@ -600,6 +600,19 @@ public class PP07Checker extends GrammarBaseListener {
 	private Type getType(ParseTree node) {
 		return this.result.getType(node);
 	}
+	
+	/**
+	 * Gets the type of type nodes. These do not have an enter- or exit method,
+	 * so they are defined here.
+	 * @param ctx context of the ttype node we want to know the Type of.
+	 * @return Type that was found, or null if none was found.
+	 */
+	public Type getType(TypeContext ctx) {
+		if (ctx.getToken(GrammarParser.BOOL, 0) != null) return Type.BOOL;
+		if (ctx.getToken(GrammarParser.INT, 0) != null) return Type.INT;
+		if (ctx.getToken(GrammarParser.INT, 0) != null) return Type.VOID;
+		return null;
+	}
 
 	/**
 	 * Convenience method to add a flow graph entry to the result.

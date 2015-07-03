@@ -3,6 +3,7 @@ package grammar;
 import java.util.ArrayList;
 import java.util.List;
 
+import grammar.Functions.Function;
 import grammar.GrammarParser.FuncStatContext;
 import grammar.GrammarParser.LockStatContext;
 import grammar.GrammarParser.RunStatContext;
@@ -68,8 +69,13 @@ public class PP07PrepWalker extends GrammarBaseListener {
 	 */
 	@Override
 	public void exitRunStat(RunStatContext ctx) {
-		if (!runs.addRun(ctx.ID(0).getText(), functions.getFunction(ctx.ID(1).getText()).getReturntype())) {
-			addError("Run ID " + ctx.ID(0).getText() + " already declared in program");
+		Function function = functions.getFunction(ctx.ID(1).getText());
+		if (function != null) {
+			if (!runs.addRun(ctx.ID(0).getText(), function.getReturntype())) {
+				addError("Run ID " + ctx.ID(0).getText() + " already declared in program");
+			}
+		} else {
+			addError("Function " + ctx.ID(1).getText() + " not declared in program");
 		}
 	}
 	
