@@ -30,21 +30,26 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 	private Map<String, Label> labels;
 	private int lineNum;
 	private int labelID = 0;
+	private String endProgLabel;
 
 	public File generate(ParseTree tree) {
 		this.symbolTable = new SymbolTable();
 		this.labels = new HashMap<>();
 		this.lineNum = 0;
+		this.endProgLabel = getNewLabelID();
+		File temp = new File("temp.hs");
 		File file = new File("program.hs");
 		try {
-			file.createNewFile();
-			writer = new BufferedWriter(new FileWriter(file));
+			temp.createNewFile();
+			writer = new BufferedWriter(new FileWriter(temp));
 			generateHeader();
 			tree.accept(this);
+			generateFooter();
 			writer.flush();
 			writer.close();
 			writer = new BufferedWriter(new FileWriter(file));
-			reader = new BufferedReader(new FileReader(file));
+			file.createNewFile();
+			reader = new BufferedReader(new FileReader(temp));
 			generateLabels();
 			reader.close();
 			writer.flush();
@@ -56,7 +61,6 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 
 		return file;
 	}
-
 
 	private void generateLabels() throws IOException {
 		String line;
@@ -71,8 +75,34 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		}
 	}
 
-	private void generateHeader() {
 
+	private void generateHeader() throws IOException {
+		String[] header = new String[]{
+				"import Sprockell.System",
+				"prog :: [Instruction]",
+				"prog = ["
+		};
+		for (String s : header) {
+			writer.write(s);
+			writer.newLine();
+			lineNum++;
+		}
+	}
+
+	private void generateFooter() throws IOException {
+		String[] footer = new String[]{
+				"\tEndProg",
+				"\t]",
+				"main = run 1 prog"
+		};
+		for (String s : footer) {
+			if (s.equals("\tEndProg")) {
+				labels.put(endProgLabel, new Label(endProgLabel, lineNum));
+			}
+			writer.write(s);
+			writer.newLine();
+			lineNum++;
+		}
 	}
 
 	@Override
@@ -434,7 +464,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		}
 		lineNum++;
 		try {
-			writer.write(opCode.toString() + " " + operands);
+			writer.write("\t" + opCode.toString() + " " + operands + ",");
 			writer.newLine();
 		} catch (IOException e) {
 			e.printStackTrace();
