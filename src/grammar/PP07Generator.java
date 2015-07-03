@@ -94,8 +94,25 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 				"\tRead (Addr 0) ,",
 				"\tReceive RegA ,",
 				"\tWrite RegA (Addr 0x1000000) ,",
-				"\tRead (Addr 0x1000000) ,",
-				"\tReceive RegA ,",
+				"\tNop ,",
+				"\tNop ,",
+				"\tNop ,",
+				"\tNop ,",
+				"\tNop ,",
+				"\tNop ,",
+				"\tNop ,",
+				"\tNop ,",
+				"\tNop ,",
+				"\tNop ,",
+				"\tNop ,",
+				"\tNop ,",
+				"\tNop ,",
+				"\tNop ,",
+				"\tNop ,",
+				"\tNop ,",
+				"\tNop ,",
+				"\tNop ,",
+				"\tNop ,",
 				"\tEndProg",
 				"\t]",
 				"main = run 1 prog"
@@ -211,7 +228,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 
 	@Override
 	public Op visitFuncStat(@NotNull GrammarParser.FuncStatContext ctx) {
-		// TODO: Not implemented
+
 		return null;
 	}
 
