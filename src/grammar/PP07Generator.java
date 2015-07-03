@@ -94,7 +94,7 @@ public class PP07Generator extends GrammarBaseVisitor<Op> {
 		String[] footer = new String[]{
 				"\tRead (Addr 0) ,",
 				"\tReceive RegA ,",
-				"\tWrite RegA (Addr 0x1000000) ,",
+				"\tWrite RegA stdio ,",
 				"\tRead (Addr 0x0) ,",
 				"\tReceive RegA ,",
 				"\tEndProg",
